@@ -39,6 +39,7 @@ namespace miccore
             _console.Out.Write(data);
             _console.ResetColor();
         }
+
     }
     
 }
