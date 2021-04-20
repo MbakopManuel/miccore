@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace miccore
 {
 
-    [HelpOption("--help")]
+    [HelpOption("--help | -h | -?")]
     abstract class miccoreBaseCmd{
 
         protected ILogger _logger;  
