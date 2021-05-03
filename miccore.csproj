@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="ChilkatDnCore" Version="9.5.0.86" />
+    <PackageReference Include="Download.Client" Version="1.0.5" />
     <PackageReference Include="FluentFTP" Version="33.1.6" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.1.0" />
     <PackageReference Include="McMaster.Extensions.Hosting.CommandLine" Version="3.1.0" />

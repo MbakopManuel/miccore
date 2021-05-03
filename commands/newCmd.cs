@@ -9,6 +9,7 @@ using McMaster.Extensions.CommandLineUtils;
 using miccore.project;
 using miccore.service;
 using Microsoft.Extensions.Logging;
+using Neon.Downloader;
 
 namespace miccore
 {
@@ -51,6 +52,12 @@ namespace miccore
                     // Process.Start("dotnet", "build");
                 }else{
                     OutputToConsole($"project without authentication with name {_name}\n\n");
+                    
+                    IDownloader _downloader = new DownloaderClient();
+                    _downloader.OnDownloadStart += (DownloadMetric metric) => // indicates that download has started
+                    _downloader.DownloadCompleted += (DownloadMetric metric, Stream stream) => // last metric with downloaded stream
+                    _downloader.OnError += (Exception ex) => // when an error occurs
+                    _downloader.Download("https://github.com/miccore/templates/archive/refs/tags/micro-dotnet-without-auth-v1.zip");
                 }
 
                 Task.Delay(500).Wait();
