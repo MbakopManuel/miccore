@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +22,20 @@ namespace miccore.service
         public serviceCmd(ILogger<serviceCmd> logger, IConsole console){
             _logger = logger;
             _console = console;
+        }
+
+        protected override async Task<int> OnExecute(CommandLineApplication app)
+        {
+            try
+            {
+                
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                OnException(ex);
+                return 1;
+            }
         }
 
     }

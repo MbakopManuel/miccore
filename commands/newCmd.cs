@@ -29,8 +29,12 @@ namespace miccore
                 ShowInHelpText = true)]
         public string _name {get; set; }
 
+        [Option(" --project | -p",
+                CommandOptionType.SingleValue,
+                Description = "The type of project, we have two types (webapi or xamarin). default: webapi",
+                ShowInHelpText = true)]
+        public string _project {get; set; }
 
-        
         public newCmd(ILogger<newCmd> logger, IConsole console){
             _logger = logger;
             _console = console;
@@ -40,27 +44,64 @@ namespace miccore
         {
             try
             {
-                if(string.IsNullOrEmpty(_name)){
-                    _name = "Miccore WebApi";
-                }
+                if(string.IsNullOrEmpty(_project)){
+                    _project = "webapi";
+                    _name = "MiccoreWebApi";
+                   
+                    if(_auth){
+                                
+                        OutputToConsole($" \n******************************************************************************************** \n");
+                        OutputToConsole($" {_project} project creation with authentication with name {_name} ...\n");
+                        OutputToConsole($" \n******************************************************************************************** \n\n");
+                        runClone(_name, _source_with_auth);
 
-                if(_auth){
-                    OutputToConsole($"project with authentication with name {_name}\n\n");
-                    // Process.Start("git", $"clone https://github.com/miccore/Micro-dotnet.git {_name} ");
-                    // Process.Start("cd", _name);
-                    // Process.Start("pwd");
-                    // Process.Start("dotnet", "build");
+                    }else{
+
+                        OutputToConsole($" \n******************************************************************************************** \n");
+                        OutputToConsole($" {_project} project without authentication with name {_name} ...\n");
+                        OutputToConsole($" \n******************************************************************************************** \n\n");
+                        runClone(_name, _source_without_auth);
+                    }    
+
                 }else{
-                    OutputToConsole($"project without authentication with name {_name}\n\n");
-                    
-                    IDownloader _downloader = new DownloaderClient();
-                    _downloader.OnDownloadStart += (DownloadMetric metric) => // indicates that download has started
-                    _downloader.DownloadCompleted += (DownloadMetric metric, Stream stream) => // last metric with downloaded stream
-                    _downloader.OnError += (Exception ex) => // when an error occurs
-                    _downloader.Download("https://github.com/miccore/templates/archive/refs/tags/micro-dotnet-without-auth-v1.zip");
+                    switch (_project)
+                    {
+                        case "webapi":
+
+                            if(string.IsNullOrEmpty(_name)){
+                                _name = "MiccoreWebApi";
+                            }      
+
+                            if(_auth){
+                                
+                                OutputToConsole($" \n******************************************************************************************** \n");
+                                OutputToConsole($" {_project} project creation with authentication with name {_name} ...\n");
+                                OutputToConsole($" \n******************************************************************************************** \n\n");
+                                runClone(_name, _source_with_auth);
+
+                            }else{
+ 
+                                OutputToConsole($" \n******************************************************************************************** \n");
+                                OutputToConsole($" {_project} project without authentication with name {_name} ...\n");
+                                OutputToConsole($" \n******************************************************************************************** \n\n");
+                                runClone(_name, _source_without_auth);
+                            }     
+
+                        break;
+                        default:
+
+                            if(string.IsNullOrEmpty(_name)){
+                                _name = "MiccoreXamarinMobileApp";
+                            }
+                            
+                            OutputToConsole($" \n******************************************************************************************** \n");
+                            OutputToConsole($" {_project} project creation with name {_name} ... \n");
+                            OutputToConsole($" \n******************************************************************************************** \n\n");
+                        
+                        break;
+                    }
                 }
 
-                Task.Delay(500).Wait();
                 return 0;
             }
             catch (Exception ex)
@@ -69,7 +110,7 @@ namespace miccore
                 return 1;
             }
         }
-        
+
 
     }
 }

@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -8,6 +12,15 @@ namespace miccore
 
     [HelpOption("--help | -h | -?")]
     abstract class miccoreBaseCmd{
+
+        
+        protected readonly string _template_url = "https://github.com/miccore/templates.git";
+        protected readonly string _source_with_auth = "template/micro-dotnet-with-auth";
+        protected readonly string _source_without_auth = "template/micro-dotnet-without-auth";
+        protected readonly string _source_user_microservice = "template/user.microservice";
+        protected readonly string _source_sample_microservice = "template/sample.microservice";
+        protected readonly string _source_samples_services = "template/samples-services";
+
 
         protected ILogger _logger;  
         protected IConsole _console;
@@ -19,7 +32,7 @@ namespace miccore
 
           protected void OnException(Exception ex)
         {
-            OutputError(ex.Message);
+            OutputError($"\n{ex.Message}\n\n");
             _logger.LogError(ex.Message);
             _logger.LogDebug(ex, ex.Message);
         }
@@ -39,6 +52,44 @@ namespace miccore
             _console.Out.Write(data);
             _console.ResetColor();
         }
+
+        protected void runClone(string name, string source){
+           
+            var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
+            process1.WaitForExit();
+            
+            OutputToConsole($" \n******************************************************************************************** \n");
+            OutputToConsole($" building of the solution\n");
+            OutputToConsole($" \n******************************************************************************************** \n");
+
+            Directory.SetCurrentDirectory($"./{name}/");
+            process1 = Process.Start("dotnet", "build");
+            process1.WaitForExit();
+
+
+            OutputToConsole($" \n******************************************************************************************** \n");
+            OutputToConsole($" git initialization \n");
+            OutputToConsole($" \n******************************************************************************************** \n\n");
+
+            var directory = new DirectoryInfo("./.git/") { Attributes = FileAttributes.Normal };
+
+            foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
+            {
+                info.Attributes = FileAttributes.Normal;
+            }
+
+            directory.Delete(true);
+
+            process1 = Process.Start("git", "init");
+            process1.WaitForExit();
+
+            process1 = Process.Start("git", "branch -m master main");
+            process1.WaitForExit();
+            
+        }
+
+        
+        
 
     }
     
