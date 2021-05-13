@@ -31,10 +31,13 @@ namespace miccore.project
             try
             {
                 if(File.Exists("./Microservice.WebApi.sln")){
+                    
+                    if(string.IsNullOrEmpty(_name)){
+                        OutputError($"\n name option is required to execute this command\n\n");
+                    }
 
-                    var name = "";
                     _name = char.ToUpper(_name[0]) + _name.Substring(1).ToLower();
-                    name = _name;
+                    var name = _name;
                     _name = $"{_name}.Microservice";
                     
                     if(Directory.Exists($"./{_name}")){

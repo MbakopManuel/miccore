@@ -71,7 +71,34 @@ namespace miccore
             OutputToConsole($" git initialization \n");
             OutputToConsole($" \n******************************************************************************************** \n\n");
 
-            var directory = new DirectoryInfo("./.git/") { Attributes = FileAttributes.Normal };
+            deleteFolder("./.git/");
+            // var directory = new DirectoryInfo("./.git/") { Attributes = FileAttributes.Normal };
+
+            // foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
+            // {
+            //     info.Attributes = FileAttributes.Normal;
+            // }
+
+            // directory.Delete(true);
+
+            process1 = Process.Start("git", "init");
+            process1.WaitForExit();
+
+            process1 = Process.Start("git", "branch -m master main");
+            process1.WaitForExit();
+            
+        }
+
+        protected void runOnlyClone(string name, string source){
+           
+            var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
+            process1.WaitForExit();
+            
+        }
+
+        protected void deleteFolder(string path){
+
+            var directory = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
 
             foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
             {
@@ -80,12 +107,17 @@ namespace miccore
 
             directory.Delete(true);
 
-            process1 = Process.Start("git", "init");
-            process1.WaitForExit();
+        }
 
-            process1 = Process.Start("git", "branch -m master main");
-            process1.WaitForExit();
-            
+        protected void setNormalFolder(string path){
+
+            var directory = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
+
+            foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
+            {
+                info.Attributes = FileAttributes.Normal;
+            }
+
         }
 
         
