@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
@@ -43,8 +44,8 @@ namespace miccore.service
                 
                 _name = char.ToUpper(_name[0]) + _name.Substring(1).ToLower();
                 var current = Path.GetFullPath(".");
-                var temp = Path.GetTempPath();
-                var name = temp + _name;
+                var temp = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                var name = temp + "/" + _name;
 
                 // Directory.CreateDirectory(name);
                 Directory.SetCurrentDirectory(temp);
@@ -55,23 +56,48 @@ namespace miccore.service
                 runOnlyClone(_name, _source_samples_services);
 
                 setNormalFolder(name);
-                RenameUtility rename = new RenameUtility();
-
-                File.Copy($"{name}/samples-operation", $"{current}/{_project}.Microservice/Operations/{_name}", true);
+    
+                DirectoryCopy($"{name}/samples-operation", $"{current}/{_project}.Microservice/Operations/{_name}", true);
                 // rename.Rename($"{current}/{_project}.Microservice", "samples-operation", _name);
 
-                File.Copy($"{name}/samples-service", $"{current}/{_project}.Microservice/Services/{_name}", true);
+                DirectoryCopy($"{name}/samples-service", $"{current}/{_project}.Microservice/Services/{_name}", true);
                 // rename.Rename($"{current}/{_project}.Microservice", "samples-service", _name);
 
-                File.Copy($"{name}/samples-repository", $"{current}/{_project}.Microservice/Repositories/{_name}", true);
+                DirectoryCopy($"{name}/samples-repository", $"{current}/{_project}.Microservice/Repositories/{_name}", true);
                 // rename.Rename($"{current}/{_project}.Microservice", "samples-repository", _name);
 
+                RenameUtility rename = new RenameUtility();
                 rename.Rename($"{current}/{_project}.Microservice", "Sample", _name);
                 rename.Rename($"{current}/{_project}.Microservice", "sample",  char.ToLower(_name[0]) + _name.Substring(1).ToLower());
+                rename.Rename($"{current}/{_project}.Microservice", $"{_name}.Microservice", $"{_project}.Microservice");
 
-               
+
+                OutputToConsole($" \n******************************************************************************************** \n");
+                OutputToConsole($"   dependencies injections ... \n");
+                OutputToConsole($" \n******************************************************************************************** \n\n");
+
+                InjectionUtility injection = new InjectionUtility();
+                OutputToConsole($"   services and repositories injections ... \n");
+                injection.ServiceNameSpacesImportation($"{current}/{_project}.Microservice/Services/Services.cs", $"{_project}.Microservice", _name);
+                injection.ServiceRepositoryServicesInjection($"{current}/{_project}.Microservice/Services/Services.cs", _name);
+                injection.ServiceProfileAdding($"{current}/{_project}.Microservice/Services/Services.cs", _name);
+                
+                OutputToConsole($"   DBContext model creations ... \n");
+                injection.DBContextNameSpacesImportation($"{current}/{_project}.Microservice/Data/IApplicationDbContext.cs", $"{_project}.Microservice", _name);
+                injection.DBContextIApplicationInjection($"{current}/{_project}.Microservice/Data/IApplicationDbContext.cs",  _name);
+
+                injection.DBContextNameSpacesImportation($"{current}/{_project}.Microservice/Data/ApplicationDbContext.cs", $"{_project}.Microservice", _name);
+                injection.DBContextApplicationInjection($"{current}/{_project}.Microservice/Data/ApplicationDbContext.cs",  _name);
+
+                OutputToConsole($" \n******************************************************************************************** \n");
+                OutputToConsole($"   solution building ... \n");
+                OutputToConsole($" \n******************************************************************************************** \n\n");
+
                 Directory.SetCurrentDirectory(current);
                 deleteFolder(name);
+
+                var process1 = Process.Start("dotnet", "build");
+                process1.WaitForExit();
                 
                 return 0;
             }
