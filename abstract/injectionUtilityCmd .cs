@@ -29,7 +29,7 @@ namespace miccore{
 
             string[] add = new string[]{
                 $"\n",
-                $"\n\t//{projectName} namespaces importation",
+                $"\t//{projectName} namespaces importation",
                 $"\tusing {projectName}.Repositories.{serviceName};",
                 $"\tusing {projectName}.Services.{serviceName};",
                 $"\tusing {projectName}.Operations.{serviceName}.MapperProfiles;",
@@ -153,7 +153,7 @@ namespace miccore{
 
             string[] add = new string[]{
                 $"\n",
-                $"\n\t\t\t\t\t//{serviceName} adding profiles",
+                $"\t\t\t\t\t//{serviceName} adding profiles",
                 $"\t\t\t\t\tnew {serviceName}Profile(),",
                 $"\t\t\t\t\tnew {serviceName}ResponseProfile(),",
                 $"\t\t\t\t\tnew Create{serviceName}RequestProfile(),",
@@ -232,8 +232,8 @@ namespace miccore{
 
             string[] add = new string[]{
                 $"\n",
-                $"\n\t//{projectName} namespaces importation for DBContext",
-                $"\n\tusing {projectName}.Repositories.{serviceName}.DtoModels;",
+                $"\t//{projectName} namespaces importation for DBContext",
+                $"\tusing {projectName}.Repositories.{serviceName}.DtoModels;",
                 $"\n",
             };
             
@@ -288,8 +288,8 @@ namespace miccore{
 
             string[] add = new string[]{
                 $"\n",
-                $"\n\t//{serviceName} DBContext application injections",
-                $"\n\t\t\tDbSet<{serviceName}DtoModel> IApplicationDbContext.{serviceName}s {{ get; set; }}",
+                $"\t//{serviceName} DBContext application injections",
+                $"\t\t\tDbSet<{serviceName}DtoModel> IApplicationDbContext.{serviceName}s {{ get; set; }}",
                 $"\n",
             };
             
@@ -343,8 +343,8 @@ namespace miccore{
 
             string[] add = new string[]{
                 $"\n",
-                $"\n\t//{serviceName} DBContext application injections",
-                $"\n\t\t\tDbSet<{serviceName}DtoModel> {serviceName}s {{ get; set; }}",
+                $"\t\t\t//{serviceName} DBContext application injections",
+                $"\t\t\tDbSet<{serviceName}DtoModel> {serviceName}s {{ get; set; }}",
                 $"\n",
             };
             
