@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
+using miccore.Utility;
 using Microsoft.Extensions.Logging;
 
 namespace miccore.project
@@ -89,7 +90,7 @@ namespace miccore.project
                     process.WaitForExit();
 
                 }else{
-                    OutputError("microservice solution not found.\ngo to the general project");
+                    OutputError("microservice solutiontttttttttttttttttt not found.\ngo to the general project");
                 }
 
                

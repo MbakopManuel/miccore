@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
-namespace miccore{
+namespace miccore.Utility{
     class RenameUtility{
 
         public RenameUtility(){

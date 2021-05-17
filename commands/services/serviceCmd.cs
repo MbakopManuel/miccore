@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
+using miccore.Utility;
 using Microsoft.Extensions.Logging;
 
 namespace miccore.service
