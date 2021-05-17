@@ -47,7 +47,6 @@ namespace miccore.project
                     
                     if(_auth){
                         
-
                         OutputToConsole($" \n******************************************************************************************** \n");
                         OutputToConsole($"   add microservice with authentication with name {_name} ... \n");
                         OutputToConsole($" \n******************************************************************************************** \n\n");
@@ -89,8 +88,14 @@ namespace miccore.project
                     process = Process.Start("dotnet", $"build");
                     process.WaitForExit();
 
+                    OutputToConsole($" \n******************************************************************************************** \n");
+                    OutputToConsole($"  package json injection ... \n");
+                    OutputToConsole($" \n******************************************************************************************** \n\n");
+                    InjectionUtility injection = new InjectionUtility();
+                    injection.PackageJsonProjectInject("./package.json", _name);
+
                 }else{
-                    OutputError("microservice solutiontttttttttttttttttt not found.\ngo to the general project");
+                    OutputError("microservice solution not found.\ngo to the general project");
                 }
 
                

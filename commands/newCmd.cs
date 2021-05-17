@@ -1,15 +1,8 @@
 using System;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
-using FluentFTP;
 using McMaster.Extensions.CommandLineUtils;
-using miccore.project;
-using miccore.service;
+using miccore.Utility;
 using Microsoft.Extensions.Logging;
-using Neon.Downloader;
 
 namespace miccore
 {
@@ -86,6 +79,9 @@ namespace miccore
                                 OutputToConsole($" \n******************************************************************************************** \n\n");
                                 runClone(_name, _source_without_auth);
                             }     
+
+                            RenameUtility rename = new RenameUtility();
+                            rename.Rename($"./", "webapi_template", _name);
 
                         break;
                         default:

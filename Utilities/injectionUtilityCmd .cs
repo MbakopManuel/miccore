@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
+using miccore.Models;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace miccore.Utility{
     class InjectionUtility{
@@ -51,41 +53,6 @@ namespace miccore.Utility{
             
         }
 
-        public void ServiceNameSpacesImportationWithAuth(string filepath, string projectName, string serviceName){
-            var text = File.ReadAllLines(filepath);
-            int i = Array.IndexOf(text, "/* End Import */");
-            var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
-
-            string[] add = new string[]{
-                $"\n",
-                $"\n\t//{projectName} namespaces importation",
-                $"\n\tusing {projectName}.Repositories.{serviceName};",
-                $"\n\tusing {projectName}.Services.{serviceName};",
-                $"\n\tusing {projectName}.Operations.{serviceName}.MapperProfiles;",
-                $"\n\tusing {projectName}.Services.{serviceName}.MapperProfiles;",
-                $"\n",
-                $"\n",
-                $"\n\tusing {projectName}.Repositories.Role;",
-                $"\n\tusing {projectName}.Services.Role;",
-                $"\n\tusing {projectName}.Operations.Role.MapperProfiles;",
-                $"\n\tusing {projectName}.Services.Role.MapperProfiles;",
-            };
-            
-            pre = pre.Concat(add);
-            pre = pre.Concat(post);
-
-            try
-            {
-                File.WriteAllText(filepath, string.Join('\n', pre));
-            }
-            catch (System.Exception ex)
-            {
-                Console.WriteLine($"ERROR - Failed to import namespaces in file: {ex.Message}.");
-            }
-            
-        }
-
         public void ServiceRepositoryServicesInjection(string filepath, string serviceName){
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "            /** End Injection */");
@@ -98,37 +65,6 @@ namespace miccore.Utility{
                 $"\t\t\t\t_services.TryAddScoped<I{serviceName}Repository, {serviceName}Repository>();",
                 $"\t\t\t\t_services.TryAddTransient<I{serviceName}Service, {serviceName}Service>();",
                 $"\n",
-            };
-            
-            pre = pre.Concat(add);
-            pre = pre.Concat(post);
-
-            try
-            {
-                File.WriteAllText(filepath, string.Join('\n', pre));
-            }
-            catch (System.Exception ex)
-            {
-                Console.WriteLine($"ERROR - Failed to inject the dependencies in file: {ex.Message}.");
-            }
-            
-        }
-
-        public void ServiceRepositoryServicesInjectionWithAuth(string filepath, string serviceName){
-            var text = File.ReadAllLines(filepath);
-            int i = Array.IndexOf(text, "            /** End Injection */");
-            var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
-
-            string[] add = new string[]{
-                $"\n",
-                $"\n\t//{serviceName} dependency injections",
-                $"\n\t\t\t\t_services.TryAddScoped<I{serviceName}Repository, {serviceName}Repository>();",
-                $"\n\t\t\t\t_services.TryAddTransient<I{serviceName}Service, {serviceName}Service>();",
-                $"\n",
-                $"\n",
-                $"\n\t\t\t\t_services.TryAddScoped<IRoleRepository, RoleRepository>();",
-                $"\n\t\t\t\t_services.TryAddTransient<IRoleService, RoleService>();",
             };
             
             pre = pre.Concat(add);
@@ -175,42 +111,6 @@ namespace miccore.Utility{
             
         }
 
-        public void ServiceProfileAddingWithAuth(string filepath, string serviceName){
-            var text = File.ReadAllLines(filepath);
-            int i = Array.IndexOf(text, "            /** End Injection */");
-            var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
-
-            string[] add = new string[]{
-                $"\n",
-                $"\n\t//{serviceName} adding profiles",
-                $"\n\t\t\t\t\tnew {serviceName}Profile(),",
-                $"\n\t\t\t\t\tnew Login{serviceName}RequestProfile(),",
-                $"\n\t\t\t\t\tnew {serviceName}ResponseProfile(),",
-                $"\n\t\t\t\t\tnew Create{serviceName}RequestProfile(),",
-                $"\n\t\t\t\t\tnew Update{serviceName}RequestProfile()",
-                $"\n",
-                $"\n",
-                $"\n\t\t\t\t\tnew RoleProfile(),",
-                $"\n\t\t\t\t\tnew RoleResponseProfile(),",
-                $"\n\t\t\t\t\tnew CreateRoleRequestProfile(),",
-                $"\n\t\t\t\t\tnew UpdateRoleRequestProfile()",
-            };
-            
-            pre = pre.Concat(add);
-            pre = pre.Concat(post);
-
-            try
-            {
-                File.WriteAllText(filepath, string.Join('\n', pre));
-            }
-            catch (System.Exception ex)
-            {
-                Console.WriteLine($"ERROR - Failed to inject the dependencies in file: {ex.Message}.");
-            }
-            
-        }
-        
         /**
         *
         *end service file importation, injection and profile adding
@@ -222,7 +122,6 @@ namespace miccore.Utility{
         *start DBContext file importation, injection
         *
         */
-
 
         public void DBContextNameSpacesImportation(string filepath, string projectName, string serviceName){
             var text = File.ReadAllLines(filepath);
@@ -250,36 +149,6 @@ namespace miccore.Utility{
             }
             
         }
-
-
-        public void DBContextNameSpacesImportationWithAuth(string filepath, string projectName, string serviceName){
-            var text = File.ReadAllLines(filepath);
-            int i = Array.IndexOf(text, "/* End Import */");
-            var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
-
-            string[] add = new string[]{
-                $"\n",
-                $"\n\t//{projectName} namespaces importation for DBContext",
-                $"\n\tusing {projectName}.Repositories.{serviceName}.DtoModels;",
-                $"\n\tusing {projectName}.Repositories.Role.DtoModels;",
-                $"\n",
-            };
-            
-            pre = pre.Concat(add);
-            pre = pre.Concat(post);
-
-            try
-            {
-                File.WriteAllText(filepath, string.Join('\n', pre));
-            }
-            catch (System.Exception ex)
-            {
-                Console.WriteLine($"ERROR - Failed to import namespaces DBContext in file: {ex.Message}.");
-            }
-            
-        }
-
         public void DBContextApplicationInjection(string filepath, string serviceName){
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "        /** End DBContext Adding */");
@@ -306,35 +175,6 @@ namespace miccore.Utility{
             }
             
         }
-
-        public void DBContextApplicationInjectionWithAuth(string filepath, string serviceName){
-            var text = File.ReadAllLines(filepath);
-            int i = Array.IndexOf(text, "        /** End DBContext Adding */");
-            var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
-
-            string[] add = new string[]{
-                $"\n",
-                $"\n\t//{serviceName} DBContext application injections",
-                $"\n\t\t\tDbSet<{serviceName}DtoModel> IApplicationDbContext.{serviceName}s {{ get; set; }}",
-                $"\n\t\t\tDbSet<RoleDtoModel> IApplicationDbContext.Roles {{ get; set; }}",
-                $"\n",
-            };
-            
-            pre = pre.Concat(add);
-            pre = pre.Concat(post);
-
-            try
-            {
-                File.WriteAllText(filepath, string.Join('\n', pre));
-            }
-            catch (System.Exception ex)
-            {
-                Console.WriteLine($"ERROR - Failed to inject the DBContext in file: {ex.Message}.");
-            }
-            
-        }
-
         public void DBContextIApplicationInjection(string filepath, string serviceName){
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "        /** End Interface DBContext Adding */");
@@ -362,39 +202,168 @@ namespace miccore.Utility{
             
         }
 
-        public void DBContextIApplicationInjectionWithAuth(string filepath, string serviceName){
-            var text = File.ReadAllLines(filepath);
-            int i = Array.IndexOf(text, "        /** End Interface DBContext Adding */");
-            var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
-
-            string[] add = new string[]{
-                $"\n",
-                $"\n\t//{serviceName} DBContext application injections",
-                $"\n\t\t\tDbSet<{serviceName}DtoModel> {serviceName}s {{ get; set; }}",
-                $"\n\t\t\tDbSet<RoleDtoModel> Roles {{ get; set; }}",
-                $"\n",
-            };
-            
-            pre = pre.Concat(add);
-            pre = pre.Concat(post);
-
-            try
-            {
-                File.WriteAllText(filepath, string.Join('\n', pre));
-            }
-            catch (System.Exception ex)
-            {
-                Console.WriteLine($"ERROR - Failed to inject the DBContext in file: {ex.Message}.");
-            }
-            
-        }
-        
-        /**
+      /**
         *
         *end DBContext file importation, injection
         *
         */
+
+         /**
+        *
+        * start package json project injection
+        *
+        */
+
+        public void PackageJsonProjectInject(string filepath, string projectName){
+            var text = File.ReadAllText(filepath);
+            Package package = JsonConvert.DeserializeObject<Package>(text);
+            
+            int lastport = Int32.Parse(package.Projects.Last().Port);
+
+            Project project = new Project();
+            project.Name = projectName;
+            project.Port = (lastport + 1).ToString();
+
+            package.Projects.Add(project);
+
+            string content = "{\n";
+
+            content += $"\t\"name\": \"{package.Name}\",\n";
+            content += $"\t\"version\": \"{package.Version}\",\n";
+            content += $"\t\"projects\": [\n";
+
+            package.Projects.ForEach(x => {
+                content += "\t\t{ \n";
+                content += $"\t\t\t\"name\": \"{x.Name}\",\n";
+                content += $"\t\t\t\"port\": \"{x.Port}\"\n";
+                content += "\t\t}";
+
+                if(!package.Projects.Last().Equals(x)){
+                    content += ", \n";
+                }
+            });
+            content += $"\n\t]\n";            
+            content += "}";            
+
+            try
+            {
+                File.WriteAllText(filepath, content);
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"ERROR - Failed package json project injection in file: {ex.Message}.");
+            }
+            
+        }
+
+      /**
+        *
+        *end  package json project injection
+        *
+        */
+
+         /**
+        *
+        * start sh file builder
+        *
+        */
+
+        public void SHFilesCreationAndInject(string packageFile){
+            
+            try{
+                var text = File.ReadAllText(packageFile);
+                Package package = JsonConvert.DeserializeObject<Package>(text);
+
+                if(Directory.Exists("./dist")){
+                     var directory = new DirectoryInfo("./dist") { Attributes = FileAttributes.Normal };
+
+                    foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
+                    {
+                        info.Attributes = FileAttributes.Normal;
+                    }
+
+                    directory.Delete(true);
+                }
+
+                Directory.CreateDirectory("./dist");
+                Directory.SetCurrentDirectory("./dist");
+
+                string startText = "";
+                package.Projects.ForEach(x => {
+
+                    var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
+                    File.Create(file);
+                    string content = "";
+
+                    if(package.Projects.First().Equals(x)){
+                        content = $"cp ./{x.Name}/ocelot.json .;dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
+                    }else{
+                        content = $"dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
+                    }
+
+                    File.WriteAllText(file, content);
+                    startText += $"pm2 delete {package.Name}-{x.Name};";
+                    startText += $"pm2 start {file} --name {package.Name}-{x.Name};";
+                });
+
+                var startfile = $"./start.sh";
+                File.Create(startfile);
+                File.WriteAllText(startfile, startText);
+
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
+            }
+            
+        }
+
+        public void SHFilesBuilding(string packageFile){
+            
+            try{
+                var text = File.ReadAllText(packageFile);
+                Package package = JsonConvert.DeserializeObject<Package>(text);
+
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" building of the solution\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                var process1 = Process.Start("dotnet", "build");
+                process1.WaitForExit();
+
+
+                package.Projects.ForEach(x => {
+
+                    var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
+                    File.Create(file);
+                    string content = "";
+
+                    if(package.Projects.First().Equals(x)){
+                        content = $"cp ./{x.Name}/ocelot.json .;dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
+                    }else{
+                        content = $"dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
+                    }
+
+                    File.WriteAllText(file, content);
+                   
+                });
+
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
+            }
+            
+        }
+
+      /**
+        *
+        *end  sh file builder
+        *
+        */
+
+        
+
+
 
     }
 }
