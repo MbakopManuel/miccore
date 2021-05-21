@@ -274,6 +274,12 @@ namespace miccore.Utility{
                 var text = File.ReadAllText(packageFile);
                 Package package = JsonConvert.DeserializeObject<Package>(text);
 
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" building of the solution\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                var process1 = Process.Start("dotnet", "build");
+                process1.WaitForExit();
+
                 if(Directory.Exists("./dist")){
                      var directory = new DirectoryInfo("./dist") { Attributes = FileAttributes.Normal };
 
@@ -290,6 +296,15 @@ namespace miccore.Utility{
 
                 string startText = "";
                 package.Projects.ForEach(x => {
+
+                    Console.WriteLine($" \n******************************************************************************************** \n");
+                    Console.WriteLine($" building of {x.Name}\n");
+                    Console.WriteLine($" \n******************************************************************************************** \n");
+                    var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}.csproj");
+                    process1.WaitForExit();
+                    
+                    process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}.csproj -c Release -o ./dist/{x.Name}");
+                    process1.WaitForExit();
 
                     var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
                     File.Create(file);
