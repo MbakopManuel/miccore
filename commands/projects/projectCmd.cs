@@ -92,7 +92,7 @@ namespace miccore.project
                     OutputToConsole($"  package json injection ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
                     InjectionUtility injection = new InjectionUtility();
-                    injection.PackageJsonProjectInject("./package.json", _name);
+                    injection.PackageJsonProjectInject("./package.json", _name, _auth);
 
                 }else{
                     OutputError("microservice solution not found.\ngo to the general project");

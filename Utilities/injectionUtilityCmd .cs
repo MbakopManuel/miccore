@@ -214,7 +214,7 @@ namespace miccore.Utility{
         *
         */
 
-        public void PackageJsonProjectInject(string filepath, string projectName){
+        public void PackageJsonProjectInject(string filepath, string projectName, bool auth){
             var text = File.ReadAllText(filepath);
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
@@ -223,6 +223,11 @@ namespace miccore.Utility{
             Project project = new Project();
             project.Name = projectName;
             project.Port = (lastport + 1).ToString();
+
+            if(auth){
+                RenameUtility rename = new RenameUtility();
+                rename.Rename($".", "44373", project.Port);
+            }
 
             package.Projects.Add(project);
 
@@ -311,6 +316,7 @@ namespace miccore.Utility{
                     string content = "";
 
                     if(package.Projects.First().Equals(x)){
+                        File.Copy($"./{x.Name}/ocelot.json", "./");
                         content = $"cp ./{x.Name}/ocelot.json .;dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
                     }else{
                         content = $"dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
