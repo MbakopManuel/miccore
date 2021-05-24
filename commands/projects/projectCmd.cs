@@ -93,11 +93,15 @@ namespace miccore.project
                     OutputToConsole($" \n******************************************************************************************** \n\n");
                     InjectionUtility injection = new InjectionUtility();
                     injection.PackageJsonProjectInject("./package.json", _name, _auth);
+                    
+                    OutputToConsole($" \n******************************************************************************************** \n");
+                    OutputToConsole($"  Ocelot json injection ... \n");
+                    OutputToConsole($" \n******************************************************************************************** \n\n");
+                    injection.OcelotProjectInjection("./Gateway.WebApi/ocelot.json", name);
 
                 }else{
                     OutputError("microservice solution not found.\ngo to the general project");
                 }
-
                
                 return 0;
             }
