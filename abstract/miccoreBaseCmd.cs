@@ -20,6 +20,7 @@ namespace miccore
         protected readonly string _source_user_microservice = "template/user.microservice";
         protected readonly string _source_sample_microservice = "template/sample.microservice";
         protected readonly string _source_samples_services = "template/samples-services";
+        protected readonly string _source_xamarin = "template/xamarin";
 
 
         protected ILogger _logger;  
@@ -72,20 +73,9 @@ namespace miccore
             OutputToConsole($" \n******************************************************************************************** \n\n");
 
             deleteFolder("./.git/");
-            // var directory = new DirectoryInfo("./.git/") { Attributes = FileAttributes.Normal };
-
-            // foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
-            // {
-            //     info.Attributes = FileAttributes.Normal;
-            // }
-
-            // directory.Delete(true);
 
             process1 = Process.Start("git", "init");
             process1.WaitForExit();
-
-            // process1 = Process.Start("git", "branch -m master main");
-            // process1.WaitForExit();
             
         }
 

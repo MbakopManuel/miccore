@@ -93,6 +93,7 @@ namespace miccore
                             OutputToConsole($" \n******************************************************************************************** \n");
                             OutputToConsole($" {_project} project creation with name {_name} ... \n");
                             OutputToConsole($" \n******************************************************************************************** \n\n");
+                            runClone(_name, _source_xamarin);
                         
                         break;
                     }
