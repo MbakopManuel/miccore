@@ -89,6 +89,11 @@ namespace miccore.service
 
                 injection.DBContextNameSpacesImportation($"{current}/{_project}.Microservice/Data/ApplicationDbContext.cs", $"{_project}.Microservice", _name);
                 injection.DBContextApplicationInjection($"{current}/{_project}.Microservice/Data/ApplicationDbContext.cs",  _name);
+                
+                
+                OutputToConsole($"   ocelot project service injection ... \n");
+                injection.OcelotProjectServiceInjection($"{current}/package.json",$"{current}/Gateway.WebApi/ocelot.json", _project, _name);
+
 
                 OutputToConsole($" \n******************************************************************************************** \n");
                 OutputToConsole($"   solution building ... \n");

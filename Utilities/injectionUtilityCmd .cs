@@ -218,6 +218,7 @@ namespace miccore.Utility{
 
             if(!File.Exists(filepath)){
                 Console.WriteLine("\n\nError: Package file not found\n\n");
+                return;
             }
 
             var text = File.ReadAllText(filepath);
@@ -266,10 +267,18 @@ namespace miccore.Utility{
             
         }
 
+         /**
+        *
+        * start ocelot project injection
+        *
+        */
+
+
           public void OcelotProjectInjection(string filepath, string projectName){
 
             if(!File.Exists(filepath)){
                 Console.WriteLine("\n\nError: Ocelot file not found\n\n");
+                return;
             }
 
             var text = File.ReadAllText("./package.json");
@@ -290,7 +299,7 @@ namespace miccore.Utility{
             obj.DownstreamScheme = "http";
             obj.UpstreamPathTemplate = $"/api/{projectName.ToLower()}";
             obj.UpstreamHttpMethod = new List<string>(){"POST", "GET"};
-            obj.SwaggerKey = projectName;
+            obj.SwaggerKey = $"{projectName}s";
 
             OcelotObject objId = new OcelotObject();
             objId.DownstreamHostAndPorts = new List<DownstreamHostAndPort>(){down};
@@ -298,7 +307,7 @@ namespace miccore.Utility{
             objId.DownstreamScheme = "http";
             objId.UpstreamPathTemplate = $"/api/{projectName.ToLower()}/{{id}}";
             objId.UpstreamHttpMethod = new List<string>(){"GET", "PUT", "DELETE"};
-            objId.SwaggerKey = projectName;
+            objId.SwaggerKey = $"{projectName}s";
 
             ConfigVersion conf = new ConfigVersion();
             conf.Name = $"{projectName}s Microservice API";
@@ -381,14 +390,149 @@ namespace miccore.Utility{
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"ERROR - Failed package json project injection in file: {ex.Message}.");
+                Console.WriteLine($"ERROR - Failed ocelot project injection in file: {ex.Message}.");
             }
             
         }
 
       /**
         *
-        *end  package json project injection
+        *end  ocelot project injection
+        *
+        */
+
+
+
+         /**
+        *
+        * start ocelot project service injection
+        *
+        */
+
+
+          public void OcelotProjectServiceInjection(string packageFile, string filepath, string projectName, string serviceName){
+
+            if(!File.Exists(packageFile)){
+                Console.WriteLine("\n\nError: package file not found\n\n");
+                return;
+            }
+
+            if(!File.Exists(filepath)){
+                Console.WriteLine("\n\nError: Ocelot file not found\n\n");
+                return;
+            }
+
+            var text = File.ReadAllText(packageFile);
+            Package package = JsonConvert.DeserializeObject<Package>(text);
+            
+            int lastport = Int32.Parse(
+                                    package.Projects
+                                            .Where(x => x.Name == $"{projectName}.Microservice")
+                                            .First()
+                                            .Port
+                                    );
+
+            var ocelotText = File.ReadAllText(filepath);
+            Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
+
+            DownstreamHostAndPort down = new DownstreamHostAndPort();
+            down.Host = "localhost";
+            down.Port = lastport;
+
+            OcelotObject obj = new OcelotObject();
+            obj.DownstreamHostAndPorts = new List<DownstreamHostAndPort>(){down};
+            obj.DownstreamPathTemplate = $"/{serviceName.ToLower()}";
+            obj.DownstreamScheme = "http";
+            obj.UpstreamPathTemplate = $"/api/{projectName.ToLower()}/{serviceName.ToLower()}";
+            obj.UpstreamHttpMethod = new List<string>(){"POST", "GET"};
+            obj.SwaggerKey = $"{projectName}s";
+
+            OcelotObject objId = new OcelotObject();
+            objId.DownstreamHostAndPorts = new List<DownstreamHostAndPort>(){down};
+            objId.DownstreamPathTemplate = $"/{serviceName.ToLower()}/{{id}}";
+            objId.DownstreamScheme = "http";
+            objId.UpstreamPathTemplate = $"/api/{projectName.ToLower()}/{serviceName.ToLower()}/{{id}}";
+            objId.UpstreamHttpMethod = new List<string>(){"GET", "PUT", "DELETE"};
+            objId.SwaggerKey = $"{projectName}s";
+
+            ocelot.Routes.Add(obj);
+            ocelot.Routes.Add(objId);
+
+            string content = "{\n";
+
+            content += $"\t\"Routes\": [\n";
+            ocelot.Routes.ForEach(x => {
+                content += "\t\t{ \n";
+                content += $"\t\t\t\"DownstreamPathTemplate\": \"{x.DownstreamPathTemplate}\",\n";
+                content += $"\t\t\t\"DownstreamScheme\": \"{x.DownstreamScheme}\",\n";
+                content += $"\t\t\t\"DownstreamHostAndPorts\": [\n";
+                
+                x.DownstreamHostAndPorts.ForEach(y => {
+                    content += $"\t\t\t\t{{\n";
+                    content += $"\t\t\t\t\t\"Host\":\"{y.Host}\",\n";
+                    content += $"\t\t\t\t\t\"Port\": {y.Port},\n";
+                    content += $"\t\t\t\t}}\n";
+                });
+                
+                content += $"\t\t\t],\n";
+                content += $"\t\t\t\"UpstreamPathTemplate\": \"{x.UpstreamPathTemplate}\",\n";
+                content += $"\t\t\t\"UpstreamHttpMethod\":[ ";
+
+                x.UpstreamHttpMethod.ForEach(u => {
+                    content += $"\"{u}\"";
+                    if(!x.UpstreamHttpMethod.Last().Equals(u)){
+                        content += $", ";
+                    }
+                });
+                content += $" ],\n";
+
+                content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\",\n";
+                content += "\t\t}";
+
+                if(!ocelot.Routes.Last().Equals(x)){
+                    content += ", \n";
+                }
+            });
+            content += $"\n\t],\n";    
+            
+            content += $"\t\"SwaggerEndPoints\": [\n"; 
+            ocelot.SwaggerEndPoints.ForEach(x => {
+                content += "\t\t{ \n";
+                content += $"\t\t\t\"Key\": \"{x.Key}\",\n";
+                content += $"\t\t\t\"Config\": [\n";
+                
+                x.Config.ForEach(y => {
+                    content += $"\t\t\t\t{{\n";
+                    content += $"\t\t\t\t\t\"Name\":\"{y.Name}\",\n";
+                    content += $"\t\t\t\t\t\"Version\": \"{y.Version}\",\n";
+                    content += $"\t\t\t\t\t\"Url\": \"{y.Url}\",\n";
+                    content += $"\t\t\t\t}}\n";
+                });
+                
+                content += $"\t\t\t]\n";
+               content += "\t\t}";
+                if(!ocelot.SwaggerEndPoints.Last().Equals(x)){
+                    content += ", \n";
+                }
+            });
+            content += $"\n\t]\n";   
+
+            content += "}";            
+
+            try
+            {
+                File.WriteAllText(filepath, content);
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"ERROR - Failed ocelot project service injection in file: {ex.Message}.");
+            }
+            
+        }
+
+      /**
+        *
+        *end  ocelot project service injection
         *
         */
 
