@@ -19,7 +19,6 @@ jobs:
         dotnet-version: 3.1.407
     - name: Restore dependencies
       run: dotnet restore
-      working-directory: ./miccore/
     - name: Build
       run: dotnet build --no-restore
     - name: Pack
