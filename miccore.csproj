@@ -17,6 +17,10 @@
     <ToolCommandName>miccore</ToolCommandName>
     <PackageOutputPath>./miccore-nupkg</PackageOutputPath>
 
+    <Authors>Manher</Authors>
+    <Description>Tool for dotnet core webapi microservice creation and management or for xamarin project creation</Description>
+    <PackageTags>Microservice, dotnet core, .net core, xamarin, miccore, ocelot</PackageTags>
+
   </PropertyGroup>
 
   <ItemGroup>
