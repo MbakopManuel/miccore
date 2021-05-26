@@ -27,7 +27,7 @@ namespace miccore.project
             _console = console;
         }
 
-        protected override async Task<int> OnExecute(CommandLineApplication app)
+        protected override Task<int> OnExecute(CommandLineApplication app)
         {
             try
             {
@@ -35,6 +35,7 @@ namespace miccore.project
                     
                     if(string.IsNullOrEmpty(_name)){
                         OutputError($"\n name option is required to execute this command\n\n");
+                        return Task.FromResult(1);
                     }
 
                     _name = char.ToUpper(_name[0]) + _name.Substring(1).ToLower();
@@ -43,6 +44,7 @@ namespace miccore.project
                     
                     if(Directory.Exists($"./{_name}")){
                         OutputError($"\nProject {_name} already exist, please create another or change the name\n\n");
+                        return Task.FromResult(1);
                     }
                     
                     if(_auth){
@@ -101,14 +103,15 @@ namespace miccore.project
 
                 }else{
                     OutputError("microservice solution not found.\ngo to the general project");
+                    return Task.FromResult(1);
                 }
                
-                return 0;
+                return Task.FromResult(0);
             }
             catch (Exception ex)
             {
                 OnException(ex);
-                return 1;
+                return Task.FromResult(1);
             }
         }
 

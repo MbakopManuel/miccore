@@ -33,7 +33,7 @@ namespace miccore
             _console = console;
         }
 
-        protected override async Task<int> OnExecute(CommandLineApplication app)
+        protected override Task<int> OnExecute(CommandLineApplication app)
         {
             try
             {
@@ -99,12 +99,12 @@ namespace miccore
                     }
                 }
 
-                return 0;
+                return Task.FromResult(0);
             }
             catch (Exception ex)
             {
                 OnException(ex);
-                return 1;
+                return Task.FromResult(1);
             }
         }
 

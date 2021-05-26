@@ -23,7 +23,7 @@ namespace miccore
             _console = console;
         }
 
-        protected override async Task<int> OnExecute(CommandLineApplication app)
+        protected override Task<int> OnExecute(CommandLineApplication app)
         {
             try
             {
@@ -31,6 +31,7 @@ namespace miccore
                     
                      if(!File.Exists("./package.json")){
                          OutputError("breaking project, package.json file doesn't exist\n");
+                        return Task.FromResult(1);
                      }
 
                      InjectionUtility injection = new InjectionUtility();
@@ -44,13 +45,14 @@ namespace miccore
                    
                 }else{
                     OutputError("microservice solution not found.\ngo to the general project");
+                    return Task.FromResult(1);
                 }
-                return 0;
+                return Task.FromResult(0);
             }
             catch (Exception ex)
             {
                 OnException(ex);
-                return 1;
+                return Task.FromResult(1);
             }
         }
 

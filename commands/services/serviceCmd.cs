@@ -27,20 +27,23 @@ namespace miccore.service
             _console = console;
         }
 
-        protected override async Task<int> OnExecute(CommandLineApplication app)
+        protected override Task<int> OnExecute(CommandLineApplication app)
         {
             try
             {
                 if(string.IsNullOrEmpty(_project)){
                     OutputError($"\n project name option is required to execute this command, provide project name\n\n");
+                    return Task.FromResult(1);
                 }
 
                 if(string.IsNullOrEmpty(_name)){
                     OutputError($"\n name option is required to execute this command, provide name\n\n");
+                    return Task.FromResult(1);
                 }
 
                 if(!Directory.Exists($"./{_project}.Microservice")){
                     OutputError($"\nProject {_project} doesn't exist, choose and existing project and don't write the name with the mention .Microservice\n\n");
+                    return Task.FromResult(1);
                 }
                 
                 _name = char.ToUpper(_name[0]) + _name.Substring(1).ToLower();
@@ -105,12 +108,12 @@ namespace miccore.service
                 var process1 = Process.Start("dotnet", "build");
                 process1.WaitForExit();
                 
-                return 0;
+                return Task.FromResult(0);
             }
             catch (Exception ex)
             {
                 OnException(ex);
-                return 1;
+                return Task.FromResult(1);
             }
         }
 
