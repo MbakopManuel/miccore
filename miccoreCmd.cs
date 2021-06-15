@@ -9,8 +9,8 @@ namespace miccore
     [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
     [Subcommand( typeof(newCmd),
                  typeof(addCmd),
-                 typeof(deleteCmd)
-                //  typeof(buildCmd)
+                 typeof(deleteCmd),
+                 typeof(buildCmd)
                 )]
     class miccoreCmd : miccoreBaseCmd {
 

@@ -5,7 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>latest</LangVersion>
     <AssemblyName>miccore</AssemblyName>
-    <Version>1.0.2</Version>
+    <Version>1.0.4</Version>
 
   </PropertyGroup>
 
@@ -13,13 +13,13 @@
   <PropertyGroup>
 
     <PackAsTool>true</PackAsTool>
-    <PackageId>miccore</PackageId>
+    <PackageId>Miccore.Net</PackageId>
     <ToolCommandName>miccore</ToolCommandName>
     <PackageOutputPath>./miccore-nupkg</PackageOutputPath>
 
     <Authors>Manher</Authors>
-    <Description>Tool for dotnet core webapi microservice creation and management or for xamarin project creation</Description>
-    <PackageTags>Microservice, dotnet core, .net core, xamarin, miccore, ocelot</PackageTags>
+    <Description>Tool for dotnet core webapi microservice architecture creation and management or for xamarin project creation</Description>
+    <PackageTags>Microservice, dotnet core, .net core, xamarin, miccore, ocelot, mysql</PackageTags>
     <RepositoryUrl>https://github.com/MbakopManuel/miccore.git</RepositoryUrl>
 
   </PropertyGroup>
