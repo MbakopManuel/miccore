@@ -99,7 +99,7 @@ This will create a web api project in ower microservice architecture and will im
 ### add new service to a project
 
 ```sh
-miccore add service --name project_name --project project_name
+miccore add service --name service_name --project project_name
 ```
 note that the project name is without *.microservice* after it.
 This will create a service in the project specified and will do all dependency injection and will set database context.
