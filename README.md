@@ -37,12 +37,6 @@ Miccore .Net requires [Dotnet core](https://docs.microsoft.com/) v3.1 or later t
 Install the dependencies and devDependencies and start the server.
 
 ```sh
-dotnet tool install --global Miccore.Net --version 1.0.3
-```
-
-or for the latest version...
-
-```sh
 dotnet tool install --global Miccore.Net
 ```
 
