@@ -32,7 +32,7 @@ And of course Miccore .Net itself is open source with a [public repository](http
 
 ## Installation
 
-Dillinger requires [Dotnet core](https://docs.microsoft.com/) v3.1 or later to run.
+Miccore .Net requires [Dotnet core](https://docs.microsoft.com/) v3.1 or later to run.
 
 Install the dependencies and devDependencies and start the server.
 
