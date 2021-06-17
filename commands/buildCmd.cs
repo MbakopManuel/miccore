@@ -38,7 +38,7 @@ namespace miccore
                      injection.SHFilesCreationAndInject("./package.json");
 
                      if(_open){
-                        Directory.SetCurrentDirectory("./dist");
+                        // Directory.SetCurrentDirectory("./dist");
                         var process1 = Process.Start("./start.sh");
                         process1.WaitForExit();
                      }
