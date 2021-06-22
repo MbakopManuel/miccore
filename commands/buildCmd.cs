@@ -37,11 +37,13 @@ namespace miccore
                      InjectionUtility injection = new InjectionUtility();
                      injection.SHFilesCreationAndInject("./package.json");
 
-                     if(_open){
-                        // Directory.SetCurrentDirectory("./dist");
-                        var process1 = Process.Start("./start.sh");
-                        process1.WaitForExit();
-                     }
+                    var process1 = Process.Start("chmod", "777 ./start*.sh");
+                    process1.WaitForExit();
+                    if(_open){
+                    // Directory.SetCurrentDirectory("./dist");
+                    process1 = Process.Start("./start.sh");
+                    process1.WaitForExit();
+                    }
                    
                 }else{
                     OutputError("microservice solution not found.\ngo to the general project");
