@@ -106,7 +106,7 @@ miccore build
 
 * add after the command __--open__ if you want to serve immediatly after the build.
 
-once the project is built, a so-called folder is created. to launch the project you just have to launch the file *start.sh* included in it
+once the project is built, dist/ folder is created. to launch the project you just have to launch the file *start.sh* included in it
 
 also note that for this to happen you need to install the __pm2__ tool from the node name.
 
