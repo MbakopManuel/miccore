@@ -17,21 +17,7 @@ namespace miccore.Utility{
         public void Rename(string projectPath, string oldName,string newName)
         {
         
-            // var ignoreFile = projectPath + @"\IgnoreExtensions.RenameUtility";
             var ignoreExts = new List<string>();
-
-            // if (!string.IsNullOrEmpty(ignoreFile))
-            // {
-            //     try
-            //     {
-            //         var ignoreFileText = File.ReadAllText(ignoreFile).Split(",");
-            //         ignoreExts.AddRange(ignoreFileText);
-            //     }
-            //     catch
-            //     {
-            //         Console.WriteLine($"ERROR - Failed to read IgnoreExtensions.RenameUtility file.");
-            //     }
-            // }
 
             Renamer(projectPath, oldName, newName, ignoreExts);
         }

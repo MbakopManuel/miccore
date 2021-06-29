@@ -274,7 +274,7 @@ namespace miccore.Utility{
         */
 
 
-          public void OcelotProjectInjection(string filepath, string projectName){
+        public void OcelotProjectInjection(string filepath, string projectName){
 
             if(!File.Exists(filepath)){
                 Console.WriteLine("\n\nError: Ocelot file not found\n\n");
@@ -335,7 +335,7 @@ namespace miccore.Utility{
                 x.DownstreamHostAndPorts.ForEach(y => {
                     content += $"\t\t\t\t{{\n";
                     content += $"\t\t\t\t\t\"Host\":\"{y.Host}\",\n";
-                    content += $"\t\t\t\t\t\"Port\": {y.Port},\n";
+                    content += $"\t\t\t\t\t\"Port\": {y.Port}\n";
                     content += $"\t\t\t\t}}\n";
                 });
                 
@@ -351,7 +351,7 @@ namespace miccore.Utility{
                 });
                 content += $" ],\n";
 
-                content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\",\n";
+                content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\"\n";
                 content += "\t\t}";
 
                 if(!ocelot.Routes.Last().Equals(x)){
@@ -370,7 +370,7 @@ namespace miccore.Utility{
                     content += $"\t\t\t\t{{\n";
                     content += $"\t\t\t\t\t\"Name\":\"{y.Name}\",\n";
                     content += $"\t\t\t\t\t\"Version\": \"{y.Version}\",\n";
-                    content += $"\t\t\t\t\t\"Url\": \"{y.Url}\",\n";
+                    content += $"\t\t\t\t\t\"Url\": \"{y.Url}\"\n";
                     content += $"\t\t\t\t}}\n";
                 });
                 
@@ -401,6 +401,128 @@ namespace miccore.Utility{
         *
         */
 
+         /**
+        *
+        * start ocelot project delete
+        *
+        */
+
+
+        public void ProjectDeletion(string filepath, string projectName){
+
+            if(!File.Exists(filepath)){
+                Console.WriteLine("\n\nError: Ocelot file not found\n\n");
+                return;
+            }
+
+           
+            try
+            {
+                //delete project in package json
+                var text = File.ReadAllText("./package.json");
+                Package package = JsonConvert.DeserializeObject<Package>(text);
+                package.Projects = package.Projects.Where(x => x.Name != $"{projectName}.Microservice").ToList();
+                string content = "{\n";
+
+                content += $"\t\"name\": \"{package.Name}\",\n";
+                content += $"\t\"version\": \"{package.Version}\",\n";
+                content += $"\t\"projects\": [\n";
+
+                package.Projects.ForEach(x => {
+                    content += "\t\t{ \n";
+                    content += $"\t\t\t\"name\": \"{x.Name}\",\n";
+                    content += $"\t\t\t\"port\": \"{x.Port}\"\n";
+                    content += "\t\t}";
+
+                    if(!package.Projects.Last().Equals(x)){
+                        content += ", \n";
+                    }
+                });
+                content += $"\n\t]\n";            
+                content += "}"; 
+                File.WriteAllText("./package.json", content);
+
+                //delete project in ocelot
+                var ocelotText = File.ReadAllText(filepath);
+                Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
+                ocelot.Routes = ocelot.Routes.Where(x => x.SwaggerKey != $"{projectName}s").ToList();
+                ocelot.SwaggerEndPoints = ocelot.SwaggerEndPoints.Where(x => x.Key != $"{projectName}s").ToList();
+
+                content = "{\n";
+
+                content += $"\t\"Routes\": [\n";
+                ocelot.Routes.ForEach(x => {
+                content += "\t\t{ \n";
+                content += $"\t\t\t\"DownstreamPathTemplate\": \"{x.DownstreamPathTemplate}\",\n";
+                content += $"\t\t\t\"DownstreamScheme\": \"{x.DownstreamScheme}\",\n";
+                content += $"\t\t\t\"DownstreamHostAndPorts\": [\n";
+                
+                x.DownstreamHostAndPorts.ForEach(y => {
+                    content += $"\t\t\t\t{{\n";
+                    content += $"\t\t\t\t\t\"Host\":\"{y.Host}\",\n";
+                    content += $"\t\t\t\t\t\"Port\": {y.Port}\n";
+                    content += $"\t\t\t\t}}\n";
+                });
+                
+                content += $"\t\t\t],\n";
+                content += $"\t\t\t\"UpstreamPathTemplate\": \"{x.UpstreamPathTemplate}\",\n";
+                content += $"\t\t\t\"UpstreamHttpMethod\":[ ";
+
+                x.UpstreamHttpMethod.ForEach(u => {
+                    content += $"\"{u}\"";
+                    if(!x.UpstreamHttpMethod.Last().Equals(u)){
+                        content += $", ";
+                    }
+                });
+                content += $" ],\n";
+
+                content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\"\n";
+                content += "\t\t}";
+
+                if(!ocelot.Routes.Last().Equals(x)){
+                    content += ", \n";
+                }
+                });
+                content += $"\n\t],\n";    
+                
+                content += $"\t\"SwaggerEndPoints\": [\n"; 
+                ocelot.SwaggerEndPoints.ForEach(x => {
+                    content += "\t\t{ \n";
+                    content += $"\t\t\t\"Key\": \"{x.Key}\",\n";
+                    content += $"\t\t\t\"Config\": [\n";
+                    
+                    x.Config.ForEach(y => {
+                        content += $"\t\t\t\t{{\n";
+                        content += $"\t\t\t\t\t\"Name\":\"{y.Name}\",\n";
+                        content += $"\t\t\t\t\t\"Version\": \"{y.Version}\",\n";
+                        content += $"\t\t\t\t\t\"Url\": \"{y.Url}\"\n";
+                        content += $"\t\t\t\t}}\n";
+                    });
+                    
+                    content += $"\t\t\t]\n";
+                    content += "\t\t}";
+                    if(!ocelot.SwaggerEndPoints.Last().Equals(x)){
+                        content += ", \n";
+                    }
+
+                });
+                content += $"\n\t]\n";   
+
+                content += "}";
+                File.WriteAllText(filepath, content);
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"ERROR - Failed ocelot project injection in file: {ex.Message}.");
+            }
+            
+        }
+
+      /**
+        *
+        *end  ocelot project delete
+        *
+        */
 
 
          /**

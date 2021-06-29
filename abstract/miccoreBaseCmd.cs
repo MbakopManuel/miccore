@@ -31,13 +31,19 @@ namespace miccore
             return Task.FromResult(0);
         }
 
-          protected void OnException(Exception ex)
+        /**
+        * output exception
+        */
+        protected void OnException(Exception ex)
         {
             OutputError($"\n{ex.Message}\n\n");
             _logger.LogError(ex.Message);
             _logger.LogDebug(ex, ex.Message);
         }
 
+        /**
+        * output error
+        */
         protected void OutputError(string message)
         {
             _console.BackgroundColor = ConsoleColor.Red;
@@ -46,6 +52,9 @@ namespace miccore
             _console.ResetColor();
         }
 
+        /**
+        * output data to console
+        */
         protected void OutputToConsole(string data)
         {
             _console.BackgroundColor = ConsoleColor.Black;
@@ -54,6 +63,9 @@ namespace miccore
             _console.ResetColor();
         }
 
+        /**
+        * run a clone of project, build and reinitialize the git remote
+        */
         protected void runClone(string name, string source){
            
             var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
@@ -79,6 +91,10 @@ namespace miccore
             
         }
 
+
+        /**
+        * run a clone of project
+        */
         protected void runOnlyClone(string name, string source){
            
             var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
@@ -86,6 +102,10 @@ namespace miccore
             
         }
 
+
+        /**
+        * delete folder
+        */
         protected void deleteFolder(string path){
 
             var directory = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
@@ -99,6 +119,10 @@ namespace miccore
 
         }
 
+
+        /**
+        * set attribute of a folder as normal
+        */
         protected void setNormalFolder(string path){
 
             var directory = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
@@ -110,6 +134,10 @@ namespace miccore
 
         }
 
+
+        /**
+        * copy directorye
+        */
         protected void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
         {
             // Get the subdirectories for the specified directory.
@@ -144,11 +172,39 @@ namespace miccore
                     DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
                 }
             }
+
+
+
         }
 
-        
-        
+        /**
+        * change mode of a file
+        */
+        protected bool Chmod(string filePath, string permissions = "700", bool recursive = false)
+        {
+                string cmd;
+                if (recursive)
+                    cmd = $"chmod -R {permissions} {filePath}";
+                else
+                    cmd = $"chmod {permissions} {filePath}";
+
+                try
+                {
+                    using (Process proc = Process.Start("/bin/bash", $"-c \"{cmd}\""))
+                    {
+                        proc.WaitForExit();
+                        return proc.ExitCode == 0;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+        }
 
     }
+
+
+    
     
 }

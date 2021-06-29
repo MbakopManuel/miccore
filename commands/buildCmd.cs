@@ -29,20 +29,18 @@ namespace miccore
             {
                 if(File.Exists("./Microservice.WebApi.sln")){
                     
-                     if(!File.Exists("./package.json")){
-                         OutputError("breaking project, package.json file doesn't exist\n");
+                    if(!File.Exists("./package.json")){
+                        OutputError("breaking project, package.json file doesn't exist\n");
                         return Task.FromResult(1);
-                     }
+                    }
 
-                     InjectionUtility injection = new InjectionUtility();
-                     injection.SHFilesCreationAndInject("./package.json");
-
-                    var process1 = Process.Start("chmod", "777 ./start*.sh");
-                    process1.WaitForExit();
+                    InjectionUtility injection = new InjectionUtility();
+                    injection.SHFilesCreationAndInject("./package.json");
+                    
+                    bool ch = Chmod(Path.GetFullPath("start.sh"), "777");
                     if(_open){
-                    // Directory.SetCurrentDirectory("./dist");
-                    process1 = Process.Start("./start.sh");
-                    process1.WaitForExit();
+                        var process1 = Process.Start(Path.GetFullPath("start.sh"));
+                        process1.WaitForExit();
                     }
                    
                 }else{

@@ -5,7 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>latest</LangVersion>
     <AssemblyName>miccore</AssemblyName>
-    <Version>1.0.7</Version>
+    <Version>1.0.9</Version>
 
   </PropertyGroup>
 
@@ -18,7 +18,11 @@
     <PackageOutputPath>./miccore-nupkg</PackageOutputPath>
 
     <Authors>Manher</Authors>
-    <Description>Tool for dotnet core webapi microservice architecture creation and management or for xamarin project creation</Description>
+    <Description>
+        Tool for dotnet core webapi microservice architecture creation and management or for xamarin project creation.
+
+        in this version, delete project is implemented
+    </Description>
     <PackageTags>Microservice, dotnet core, .net core, xamarin, miccore, ocelot, mysql</PackageTags>
     <RepositoryUrl>https://github.com/MbakopManuel/miccore.git</RepositoryUrl>
 

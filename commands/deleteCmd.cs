@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace miccore
 {
     [Command(Name = "delete", Description = "delete micro-project in our architecture or a service in one existing micro-project")]
-    [Subcommand( typeof(projectCmd),
+    [Subcommand( typeof(deleteProjectCmd),
                  typeof(serviceCmd))]
     class deleteCmd : miccoreBaseCmd
     {

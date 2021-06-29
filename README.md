@@ -90,6 +90,15 @@ miccore add project --name project_name
 
 This will create a web api project in ower microservice architecture and will import it in the ocelot gateway
 
+### delete microservice to architecture
+
+
+```sh
+miccore delete project --name project_name
+```
+
+This will create a web api project in ower microservice architecture and will import it in the ocelot gateway
+
 ### add new service to a project
 
 ```sh
