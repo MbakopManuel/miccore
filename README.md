@@ -27,7 +27,7 @@ Miccore .Net uses a number of open source projects to work properly:
 - [Ocelot](https://github.com/ThreeMammals/Ocelot) - Ocelot is a .NET API Gateway
 - [Xamarin](https://dotnet.microsoft.com/apps/xamarin) - Open-source mobile app platform for .NET
 - [Mysql](https://www.mysql.com/fr/) - MySQL Database Service est un service de base de données entièrement géré pour déployer des applications natives du cloud en utilisant la base de données​ ...
-- [Microservice Architecture](https://www.talend.com/fr/resources/guide-microservices/)
+- [Microservice Architecture](https://www.talend.com/fr/resources/guide-microservices/) - application that does only one thing but does it optimally
 
 And of course Miccore .Net itself is open source with a [public repository](https://github.com/MbakopManuel/miccore.git)
  on GitHub.
