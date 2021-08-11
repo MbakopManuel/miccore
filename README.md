@@ -3,7 +3,7 @@ Tool for dotnet core webapi microservice creation and management or for xamarin 
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
-.Net core 5.0
+Require .Net core 5.0
 
 Miccore .Net is a CLI which allows a user to create a webapi project with a very specific microservice architecture. it also allows you to create a xamarin project.
 
