@@ -61,13 +61,13 @@ namespace miccore.service
 
                 setNormalFolder(name);
     
-                DirectoryCopy($"{name}/samples-operation", $"{current}/{_project}.Microservice/Operations/{_name}", true);
+                DirectoryCopy($"{name}/samples-operation", $"{current}/{_project}.Microservice/{_project}.Microservice/Operations/{_name}", true);
                 // rename.Rename($"{current}/{_project}.Microservice", "samples-operation", _name);
 
-                DirectoryCopy($"{name}/samples-service", $"{current}/{_project}.Microservice/Services/{_name}", true);
+                DirectoryCopy($"{name}/samples-service", $"{current}/{_project}.Microservice/{_project}.Microservice/Services/{_name}", true);
                 // rename.Rename($"{current}/{_project}.Microservice", "samples-service", _name);
 
-                DirectoryCopy($"{name}/samples-repository", $"{current}/{_project}.Microservice/Repositories/{_name}", true);
+                DirectoryCopy($"{name}/samples-repository", $"{current}/{_project}.Microservice/{_project}.Microservice/Repositories/{_name}", true);
                 // rename.Rename($"{current}/{_project}.Microservice", "samples-repository", _name);
 
                 RenameUtility rename = new RenameUtility();
@@ -82,16 +82,16 @@ namespace miccore.service
 
                 InjectionUtility injection = new InjectionUtility();
                 OutputToConsole($"   services and repositories injections ... \n");
-                injection.ServiceNameSpacesImportation($"{current}/{_project}.Microservice/Services/Services.cs", $"{_project}.Microservice", _name);
-                injection.ServiceRepositoryServicesInjection($"{current}/{_project}.Microservice/Services/Services.cs", _name);
-                injection.ServiceProfileAdding($"{current}/{_project}.Microservice/Services/Services.cs", _name);
+                injection.ServiceNameSpacesImportation($"{current}/{_project}.Microservice/{_project}.Microservice/Services/Services.cs", $"{_project}.Microservice", _name);
+                injection.ServiceRepositoryServicesInjection($"{current}/{_project}.Microservice/{_project}.Microservice/Services/Services.cs", _name);
+                injection.ServiceProfileAdding($"{current}/{_project}.Microservice/{_project}.Microservice/Services/Services.cs", _name);
                 
                 OutputToConsole($"   DBContext model creations ... \n");
-                injection.DBContextNameSpacesImportation($"{current}/{_project}.Microservice/Data/IApplicationDbContext.cs", $"{_project}.Microservice", _name);
-                injection.DBContextIApplicationInjection($"{current}/{_project}.Microservice/Data/IApplicationDbContext.cs",  _name);
+                injection.DBContextNameSpacesImportation($"{current}/{_project}.Microservice/{_project}.Microservice/Data/IApplicationDbContext.cs", $"{_project}.Microservice", _name);
+                injection.DBContextIApplicationInjection($"{current}/{_project}.Microservice/{_project}.Microservice/Data/IApplicationDbContext.cs",  _name);
 
-                injection.DBContextNameSpacesImportation($"{current}/{_project}.Microservice/Data/ApplicationDbContext.cs", $"{_project}.Microservice", _name);
-                injection.DBContextApplicationInjection($"{current}/{_project}.Microservice/Data/ApplicationDbContext.cs",  _name);
+                injection.DBContextNameSpacesImportation($"{current}/{_project}.Microservice/{_project}.Microservice/Data/ApplicationDbContext.cs", $"{_project}.Microservice", _name);
+                injection.DBContextApplicationInjection($"{current}/{_project}.Microservice/{_project}.Microservice/Data/ApplicationDbContext.cs",  _name);
                 
                 
                 OutputToConsole($"   ocelot project service injection ... \n");

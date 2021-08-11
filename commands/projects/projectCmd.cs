@@ -60,6 +60,7 @@ namespace miccore.project
                         Directory.SetCurrentDirectory($"../");
                         RenameUtility rename = new RenameUtility();
                         rename.Rename($"{_name}/", "User.Microservice", _name);
+                        rename.Rename($"{_name}/", "User.Test.Microservice", $"{name}.Test.Microservice/");
 
                     }else{
                         
@@ -81,7 +82,9 @@ namespace miccore.project
                     OutputToConsole($" \n******************************************************************************************** \n");
                     OutputToConsole($"  adding project to the solution ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
-                    var process = Process.Start("dotnet", $"sln Microservice.WebApi.sln add ./{_name}/{_name}.csproj");
+                    var process = Process.Start("dotnet", $"sln Microservice.WebApi.sln add ./{_name}/{_name}/{_name}.csproj");
+                    process.WaitForExit();
+                    process = Process.Start("dotnet", $"sln Microservice.WebApi.sln add ./{_name}/{name}.Test.Microservice/{name}.Test.Microservice.csproj");
                     process.WaitForExit();
 
                     OutputToConsole($" \n******************************************************************************************** \n");

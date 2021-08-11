@@ -592,7 +592,7 @@ namespace miccore.Utility{
                 x.DownstreamHostAndPorts.ForEach(y => {
                     content += $"\t\t\t\t{{\n";
                     content += $"\t\t\t\t\t\"Host\":\"{y.Host}\",\n";
-                    content += $"\t\t\t\t\t\"Port\": {y.Port},\n";
+                    content += $"\t\t\t\t\t\"Port\": {y.Port}\n";
                     content += $"\t\t\t\t}}\n";
                 });
                 
@@ -608,7 +608,7 @@ namespace miccore.Utility{
                 });
                 content += $" ],\n";
 
-                content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\",\n";
+                content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\"\n";
                 content += "\t\t}";
 
                 if(!ocelot.Routes.Last().Equals(x)){
@@ -627,7 +627,7 @@ namespace miccore.Utility{
                     content += $"\t\t\t\t{{\n";
                     content += $"\t\t\t\t\t\"Name\":\"{y.Name}\",\n";
                     content += $"\t\t\t\t\t\"Version\": \"{y.Version}\",\n";
-                    content += $"\t\t\t\t\t\"Url\": \"{y.Url}\",\n";
+                    content += $"\t\t\t\t\t\"Url\": \"{y.Url}\"\n";
                     content += $"\t\t\t\t}}\n";
                 });
                 
@@ -694,28 +694,46 @@ namespace miccore.Utility{
                 }
                 string startText = "";
                 package.Projects.ForEach(x => {
+                    if(x.Name == "Gateway.WebApi"){
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" building of {x.Name}\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}.csproj");
+                        process1.WaitForExit();
+                        
+                        process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
+                        process1.WaitForExit();
 
-                    Console.WriteLine($" \n******************************************************************************************** \n");
-                    Console.WriteLine($" building of {x.Name}\n");
-                    Console.WriteLine($" \n******************************************************************************************** \n");
-                    var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}.csproj");
-                    process1.WaitForExit();
-                    
-                    process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
-                    process1.WaitForExit();
+                        var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
+                        string content = "";
 
-                    var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
-                    string content = "";
-
-                    if(package.Projects.First().Equals(x)){
                         content = $"cp ./{x.Name}/ocelot.json .;dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
-                    }else{
-                        content = $"dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
-                    }
+                        
 
-                    File.WriteAllText(file, content);
-                    startText += $"pm2 delete {package.Name}-{x.Name};";
-                    startText += $"pm2 start {file} --name {package.Name}-{x.Name};";
+                        File.WriteAllText(file, content);
+                        startText += $"pm2 delete {package.Name}-{x.Name};";
+                        startText += $"pm2 start {file} --name {package.Name}-{x.Name};";
+                    }else{
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" building of {x.Name}\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}/{x.Name}.csproj");
+                        process1.WaitForExit();
+                        
+                        process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
+                        process1.WaitForExit();
+
+                        var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
+                        string content = "";
+
+                        content = $"dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
+                       
+
+                        File.WriteAllText(file, content);
+                        startText += $"pm2 delete {package.Name}-{x.Name};";
+                        startText += $"pm2 start {file} --name {package.Name}-{x.Name};";
+                    }
+                    
                 });
 
                 var startfile = $"./start.sh";
