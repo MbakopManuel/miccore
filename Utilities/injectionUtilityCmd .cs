@@ -298,7 +298,7 @@ namespace miccore.Utility{
             obj.DownstreamPathTemplate = $"/{projectName.ToLower()}";
             obj.DownstreamScheme = "http";
             obj.UpstreamPathTemplate = $"/api/{projectName.ToLower()}";
-            obj.UpstreamHttpMethod = new List<string>(){"POST", "GET"};
+            obj.UpstreamHttpMethod = new List<string>(){"POST", "GET", "OPTIONS"};
             obj.SwaggerKey = $"{projectName}s";
 
             OcelotObject objId = new OcelotObject();
@@ -306,7 +306,7 @@ namespace miccore.Utility{
             objId.DownstreamPathTemplate = $"/{projectName.ToLower()}/{{id}}";
             objId.DownstreamScheme = "http";
             objId.UpstreamPathTemplate = $"/api/{projectName.ToLower()}/{{id}}";
-            objId.UpstreamHttpMethod = new List<string>(){"GET", "PUT", "DELETE"};
+            objId.UpstreamHttpMethod = new List<string>(){"GET", "PUT", "DELETE", "OPTIONS"};
             objId.SwaggerKey = $"{projectName}s";
 
             ConfigVersion conf = new ConfigVersion();
@@ -566,7 +566,7 @@ namespace miccore.Utility{
             obj.DownstreamPathTemplate = $"/{serviceName.ToLower()}";
             obj.DownstreamScheme = "http";
             obj.UpstreamPathTemplate = $"/api/{projectName.ToLower()}/{serviceName.ToLower()}";
-            obj.UpstreamHttpMethod = new List<string>(){"POST", "GET"};
+            obj.UpstreamHttpMethod = new List<string>(){"POST", "GET", "OPTIONS"};
             obj.SwaggerKey = $"{projectName}s";
 
             OcelotObject objId = new OcelotObject();
@@ -574,7 +574,7 @@ namespace miccore.Utility{
             objId.DownstreamPathTemplate = $"/{serviceName.ToLower()}/{{id}}";
             objId.DownstreamScheme = "http";
             objId.UpstreamPathTemplate = $"/api/{projectName.ToLower()}/{serviceName.ToLower()}/{{id}}";
-            objId.UpstreamHttpMethod = new List<string>(){"GET", "PUT", "DELETE"};
+            objId.UpstreamHttpMethod = new List<string>(){"GET", "PUT", "DELETE", "OPTIONS"};
             objId.SwaggerKey = $"{projectName}s";
 
             ocelot.Routes.Add(obj);
