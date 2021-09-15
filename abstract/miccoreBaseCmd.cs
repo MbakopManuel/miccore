@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace miccore
 {
@@ -88,6 +89,27 @@ namespace miccore
 
             process1 = Process.Start("git", "init");
             process1.WaitForExit();
+            
+            // var deserialise = new YamlDotNet.Serialization.Deserializer();
+
+            // try
+            // {
+            //     using (var reader = new StreamReader("./docker-compose.yml"))
+            //     {
+            //         var obj = deserialise.Deserialize<Dictionary<object, object>>(reader);
+            //         string json = JsonConvert.SerializeObject(obj, Formatting.Indented);
+            //         OutputToConsole($" \n******************************************************************************************** \n");
+            //         OutputToConsole($" docker-compose file \n");
+            //         OutputToConsole($" \n******************************************************************************************** \n\n");
+            //         Console.WriteLine(json);
+                    
+
+            //     }
+            // }
+            // catch (System.Exception ex)
+            // {
+            //     Console.WriteLine($"ERROR - Failed ocelot project injection in file: {ex.Message}.");
+            // }
             
         }
 

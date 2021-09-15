@@ -225,10 +225,15 @@ namespace miccore.Utility{
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
             int lastport = Int32.Parse(package.Projects.Last().Port);
+            int lasturl = Int32.Parse(package.Projects.Last().DockerUrl.Split('.')[3]);
 
             Project project = new Project();
             project.Name = projectName;
             project.Port = (lastport + 1).ToString();
+            project.DockerUrl =     package.Projects.Last().DockerUrl.Split('.')[0]+'.'+
+                                    package.Projects.Last().DockerUrl.Split('.')[1]+'.'+
+                                    package.Projects.Last().DockerUrl.Split('.')[2]+'.'+
+                                    lasturl.ToString();
 
             if(auth){
                 RenameUtility rename = new RenameUtility();
@@ -246,7 +251,8 @@ namespace miccore.Utility{
             package.Projects.ForEach(x => {
                 content += "\t\t{ \n";
                 content += $"\t\t\t\"name\": \"{x.Name}\",\n";
-                content += $"\t\t\t\"port\": \"{x.Port}\"\n";
+                content += $"\t\t\t\"port\": \"{x.Port}\",\n";
+                content += $"\t\t\t\"dockerUrl\": \"{x.DockerUrl}\"\n";
                 content += "\t\t}";
 
                 if(!package.Projects.Last().Equals(x)){
@@ -285,6 +291,7 @@ namespace miccore.Utility{
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
             int lastport = Int32.Parse(package.Projects.Last().Port);
+            string lasturl = package.Projects.Last().DockerUrl;
 
             var ocelotText = File.ReadAllText(filepath);
             Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
@@ -394,6 +401,44 @@ namespace miccore.Utility{
             }
             
         }
+
+        public void DockerProjectInjection(string filepath, string projectName){
+
+            if(!File.Exists(filepath)){
+                Console.WriteLine("\n\nError: docker compose file not found\n\n");
+                return;
+            }
+
+            var text = File.ReadAllText("./package.json");
+            Package package = JsonConvert.DeserializeObject<Package>(text);
+            
+            int lastport = Int32.Parse(package.Projects.Last().Port);
+            string lasturl = package.Projects.Last().DockerUrl;
+            
+            var deserialise = new YamlDotNet.Serialization.Deserializer();
+
+            try
+            {
+                using (var reader = new StreamReader(filepath))
+                {
+                     var obj = deserialise.Deserialize<Dictionary<object, object>>(reader);
+                     var services = (Dictionary<object, object>)obj["services"];
+                     var gateway = (Dictionary<object, object>)services["gateway"];
+                     var environment = (Dictionary<object, object>)gateway["environment"];
+
+                     Dictionary<object,object> dict = new Dictionary<object, object>();
+                     dict = gateway;
+                     dict["container_name"] = projectName;
+
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"ERROR - Failed ocelot project injection in file: {ex.Message}.");
+            }
+            
+    }
+
 
       /**
         *
@@ -745,6 +790,150 @@ namespace miccore.Utility{
                 Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
             }
             
+        }
+
+        public void DockerFilesCreationAndInject(string packageFile){
+            
+            try{
+                var text = File.ReadAllText(packageFile);
+                Package package = JsonConvert.DeserializeObject<Package>(text);
+                var ocelotText = File.ReadAllText("./Gateway.WebApi/ocelot.json");
+                Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
+
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" Ocelot docker file generation ...\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                
+                package.Projects.ForEach(x => {
+                    
+                    var routes = ocelot.Routes.Where(y => y.DownstreamHostAndPorts[0].Port.ToString() == x.Port)
+                                            .ToList();
+                    foreach (var item in routes)
+                    {
+                        item.DownstreamHostAndPorts[0].Host = x.DockerUrl.ToString();
+                        item.DownstreamHostAndPorts[0].Port = 80;
+                    }
+                    var name = x.Name.Split('.')[0]+'s';
+                    var conf = ocelot.SwaggerEndPoints.Where(y => y.Key == name).FirstOrDefault();
+                    if(conf != null){
+                        conf.Config[0].Url = $"http://{x.DockerUrl}:80/swagger/v1/swagger.json";
+                    }
+                    
+                });
+                OcelotFileWrite(ocelot, "./Gateway.WebApi/ocelot.docker.json");
+
+
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" building of the solution\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                var process1 = Process.Start("dotnet", "build");
+                process1.WaitForExit();
+                
+                package.Projects.ForEach(x => {
+
+                    if(x.Name == "Gateway.WebApi"){
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" building of {x.Name}\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}.csproj");
+                        process1.WaitForExit();
+                        
+                        process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}.csproj -c Release");
+                        process1.WaitForExit();
+
+                    }else{
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" building of {x.Name}\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}/{x.Name}.csproj");
+                        process1.WaitForExit();
+                        
+                        process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release");
+                        process1.WaitForExit();
+
+                    }
+                    
+                });
+
+
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
+            }
+            
+        }
+
+        public void OcelotFileWrite(Ocelot ocelot, string filepath){
+            string content = "{\n";
+
+            content += $"\t\"Routes\": [\n";
+            ocelot.Routes.ForEach(x => {
+                content += "\t\t{ \n";
+                content += $"\t\t\t\"DownstreamPathTemplate\": \"{x.DownstreamPathTemplate}\",\n";
+                content += $"\t\t\t\"DownstreamScheme\": \"{x.DownstreamScheme}\",\n";
+                content += $"\t\t\t\"DownstreamHostAndPorts\": [\n";
+                
+                x.DownstreamHostAndPorts.ForEach(y => {
+                    content += $"\t\t\t\t{{\n";
+                    content += $"\t\t\t\t\t\"Host\":\"{y.Host}\",\n";
+                    content += $"\t\t\t\t\t\"Port\": {y.Port}\n";
+                    content += $"\t\t\t\t}}\n";
+                });
+                
+                content += $"\t\t\t],\n";
+                content += $"\t\t\t\"UpstreamPathTemplate\": \"{x.UpstreamPathTemplate}\",\n";
+                content += $"\t\t\t\"UpstreamHttpMethod\":[ ";
+
+                x.UpstreamHttpMethod.ForEach(u => {
+                    content += $"\"{u}\"";
+                    if(!x.UpstreamHttpMethod.Last().Equals(u)){
+                        content += $", ";
+                    }
+                });
+                content += $" ],\n";
+
+                content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\"\n";
+                content += "\t\t}";
+
+                if(!ocelot.Routes.Last().Equals(x)){
+                    content += ", \n";
+                }
+            });
+            content += $"\n\t],\n";    
+            
+            content += $"\t\"SwaggerEndPoints\": [\n"; 
+            ocelot.SwaggerEndPoints.ForEach(x => {
+                content += "\t\t{ \n";
+                content += $"\t\t\t\"Key\": \"{x.Key}\",\n";
+                content += $"\t\t\t\"Config\": [\n";
+                
+                x.Config.ForEach(y => {
+                    content += $"\t\t\t\t{{\n";
+                    content += $"\t\t\t\t\t\"Name\":\"{y.Name}\",\n";
+                    content += $"\t\t\t\t\t\"Version\": \"{y.Version}\",\n";
+                    content += $"\t\t\t\t\t\"Url\": \"{y.Url}\"\n";
+                    content += $"\t\t\t\t}}\n";
+                });
+                
+                content += $"\t\t\t]\n";
+               content += "\t\t}";
+                if(!ocelot.SwaggerEndPoints.Last().Equals(x)){
+                    content += ", \n";
+                }
+            });
+            content += $"\n\t]\n";   
+
+            content += "}";            
+
+            try
+            {
+                File.WriteAllText(filepath, content);
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"ERROR - Failed ocelot project service injection in file: {ex.Message}.");
+            }
         }
 
         public void SHFilesBuilding(string packageFile){

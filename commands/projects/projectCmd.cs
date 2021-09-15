@@ -77,6 +77,7 @@ namespace miccore.project
                         RenameUtility rename = new RenameUtility();
                         rename.Rename($"./{_name}/", "Sample", name);
                         rename.Rename($"./{_name}/", "sample",  char.ToLower(name[0]) + name.Substring(1).ToLower());
+
                     }
                    
                     OutputToConsole($" \n******************************************************************************************** \n");
