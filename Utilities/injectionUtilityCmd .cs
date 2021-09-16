@@ -848,7 +848,7 @@ namespace miccore.Utility{
                         var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
                         
-                        process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release");
+                        process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}/{x.Name}.csproj -c Release");
                         process1.WaitForExit();
 
                     }
