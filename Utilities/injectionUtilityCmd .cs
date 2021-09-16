@@ -8,6 +8,7 @@ using McMaster.Extensions.CommandLineUtils;
 using miccore.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using YamlDotNet.Serialization;
 
 namespace miccore.Utility{
     class InjectionUtility{
@@ -233,7 +234,7 @@ namespace miccore.Utility{
             project.DockerUrl =     package.Projects.Last().DockerUrl.Split('.')[0]+'.'+
                                     package.Projects.Last().DockerUrl.Split('.')[1]+'.'+
                                     package.Projects.Last().DockerUrl.Split('.')[2]+'.'+
-                                    lasturl.ToString();
+                                    (lasturl+1).ToString();
 
             if(auth){
                 RenameUtility rename = new RenameUtility();
@@ -402,7 +403,7 @@ namespace miccore.Utility{
             
         }
 
-        public void DockerProjectInjection(string filepath, string projectName){
+    public void DockerProjectInjection(string filepath, string projectName){
 
             if(!File.Exists(filepath)){
                 Console.WriteLine("\n\nError: docker compose file not found\n\n");
@@ -421,20 +422,34 @@ namespace miccore.Utility{
             {
                 using (var reader = new StreamReader(filepath))
                 {
-                     var obj = deserialise.Deserialize<Dictionary<object, object>>(reader);
-                     var services = (Dictionary<object, object>)obj["services"];
-                     var gateway = (Dictionary<object, object>)services["gateway"];
-                     var environment = (Dictionary<object, object>)gateway["environment"];
+                    var obj = deserialise.Deserialize<Dictionary<object, object>>(reader);
+                    var services = (Dictionary<object, object>)obj["services"];
+                   
+                    var gateway = services["gateway"];
+                     
+                    string json = JsonConvert.SerializeObject(gateway, Formatting.Indented);
+                    
+                    ServiceItem dict = new ServiceItem();
+                    dict = JsonConvert.DeserializeObject<ServiceItem>(json);
 
-                     Dictionary<object,object> dict = new Dictionary<object, object>();
-                     dict = gateway;
-                     dict["container_name"] = projectName;
+                    dict.container_name = projectName.ToLower();
+                    dict.ports.RemoveAt(0);
+                    dict.ports.Add(lastport+":"+80);
+                    dict.build.context = "./"+projectName+".Microservice";
+                    dict.build.dockerfile = "Dockerfile."+projectName;
+                    dict.networks.static_network.ipv4_address = lasturl;
 
+                    services[projectName.ToLower()] = dict; 
+                    obj["services"] = services;
+                    var serializer = new SerializerBuilder().Build();
+                    var yaml = serializer.Serialize(obj);
+
+                    File.WriteAllText(filepath, yaml);
                 }
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"ERROR - Failed ocelot project injection in file: {ex.Message}.");
+                Console.WriteLine($"ERROR - Failed docker project injection in file: {ex.Message}.");
             }
             
     }
@@ -793,7 +808,7 @@ namespace miccore.Utility{
         }
 
         public void DockerFilesCreationAndInject(string packageFile){
-            
+             
             try{
                 var text = File.ReadAllText(packageFile);
                 Package package = JsonConvert.DeserializeObject<Package>(text);

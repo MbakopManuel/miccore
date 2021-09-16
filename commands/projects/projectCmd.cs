@@ -105,6 +105,11 @@ namespace miccore.project
                     OutputToConsole($" \n******************************************************************************************** \n\n");
                     injection.OcelotProjectInjection("./Gateway.WebApi/ocelot.json", name);
 
+                    OutputToConsole($" \n******************************************************************************************** \n");
+                    OutputToConsole($"  Docker compose json injection ... \n");
+                    OutputToConsole($" \n******************************************************************************************** \n\n");
+                    injection.DockerProjectInjection("./docker-compose.yml", name);
+
                 }else{
                     OutputError("microservice solution not found.\ngo to the general project");
                     return Task.FromResult(1);
