@@ -125,6 +125,10 @@ also note that for this to happen you need to install the __pm2__ tool from the 
 npm install -g pm2
 ```
 
+* add aftere command __--docker__ if you want to generate docker file and complete ocelot docker file with all routes.
+
+after it you only have to do __docker-compose up -d --build__ (before it, make sure you had intalled docker and docker-compose in your system)
+
 ##  Startup project file
 
 once the microservice project is created, you have to go to the startup.cs file and update the database connection elements.

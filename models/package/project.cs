@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace miccore.Models
 {
     class Project
@@ -5,5 +7,6 @@ namespace miccore.Models
         public string Name {get; set;}
         public string Port {get; set;}
         public string DockerUrl {get; set;}
+        public List<string> references {get; set;}
     }
 }

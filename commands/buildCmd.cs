@@ -58,7 +58,6 @@ namespace miccore
                         InjectionUtility injection = new InjectionUtility();
                         injection.DockerFilesCreationAndInject("./package.json");
                         
-
                     }
 
                 }else{

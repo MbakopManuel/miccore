@@ -10,7 +10,8 @@ namespace miccore
     [Subcommand( typeof(newCmd),
                  typeof(addCmd),
                  typeof(deleteCmd),
-                 typeof(buildCmd)
+                 typeof(buildCmd),
+                 typeof(migrateCmd)
                 )]
     class miccoreCmd : miccoreBaseCmd {
 
