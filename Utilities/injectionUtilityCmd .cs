@@ -54,22 +54,34 @@ namespace miccore.Utility{
             
         }
 
-         public void ServiceNameSpacesImportationForReference(string filepath, string projectName, string serviceName){
+         public void ServiceNameSpacesImportationForReference(string packageJson, string filepath, string projectName){
+              if(!File.Exists(filepath)){
+                Console.WriteLine("\n\nError: Package file not found\n\n");
+                return;
+            }
+
+            var text1 = File.ReadAllText(filepath);
+            Package package = JsonConvert.DeserializeObject<Package>(text1);
+            var project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
+
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "/* End Import */");
             var pre = text.Take(i - 1);
             var post = text.Skip(i-1);
 
-            string[] add = new string[]{
-                $"\n",
-                $"\t//{projectName} namespaces importation",
-                $"\tusing {projectName}.Operations.{serviceName}.MapperProfiles;",
-                $"\tusing {projectName}.Services.{serviceName}.MapperProfiles;",
-                $"\n",
-            };
+            project.Services.ForEach(serviceName => {
+                string[] add = new string[]{
+                    $"\n",
+                    $"\t//{projectName} namespaces importation",
+                    $"\tusing {projectName}.Operations.{serviceName}.MapperProfiles;",
+                    $"\tusing {projectName}.Services.{serviceName}.MapperProfiles;",
+                    $"\n",
+                };
+                
+                pre = pre.Concat(add);
+                pre = pre.Concat(post);
+            });
             
-            pre = pre.Concat(add);
-            pre = pre.Concat(post);
 
             try
             {
@@ -140,22 +152,36 @@ namespace miccore.Utility{
             
         }
 
-        public void ServiceProfileAddingForReference(string filepath, string serviceName){
+        public void ServiceProfileAddingForReference(string packageJson, string filepath, string projectName){
+
+            if(!File.Exists(filepath)){
+                Console.WriteLine("\n\nError: Package file not found\n\n");
+                return;
+            }
+
+            var text1 = File.ReadAllText(filepath);
+            Package package = JsonConvert.DeserializeObject<Package>(text1);
+            var project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
+
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "                /** End Adding Profiles */");
             var pre = text.Take(i - 1);
             var post = text.Skip(i-1);
 
-            string[] add = new string[]{
-                $"\n",
-                $"\t\t\t\t\t//{serviceName} adding profiles",
-                $"\t\t\t\t\tnew {serviceName}Profile(),",
-                $"\t\t\t\t\tnew {serviceName}ResponseProfile(),",
-                $"\n",
-            };
+            project.Services.ForEach(serviceName =>{
+                string[] add = new string[]{
+                    $"\n",
+                    $"\t\t\t\t\t//{serviceName} adding profiles",
+                    $"\t\t\t\t\tnew {serviceName}Profile(),",
+                    $"\t\t\t\t\tnew {serviceName}ResponseProfile(),",
+                    $"\n",
+                };
+                
+                pre = pre.Concat(add);
+                pre = pre.Concat(post);
+            });
             
-            pre = pre.Concat(add);
-            pre = pre.Concat(post);
+           
 
             try
             {
@@ -317,11 +343,22 @@ namespace miccore.Utility{
                     }
                 });
                 refer += "]";
+
+                string serv = "[";
+                x.Services.ForEach(y => {
+                    serv += $"\"{y}\"";
+                    if(x.Services.Last() != y){
+                        serv += ",";
+                    }
+                });
+                serv += "]";
+
                 content += "\t\t{ \n";
                 content += $"\t\t\t\"name\": \"{x.Name}\",\n";
                 content += $"\t\t\t\"port\": \"{x.Port}\",\n";
                 content += $"\t\t\t\"dockerUrl\": \"{x.DockerUrl}\",\n";
-                content += $"\t\t\t\"references\": {refer}\n";
+                content += $"\t\t\t\"references\": {refer},\n";
+                content += $"\t\t\t\"services\": {serv}\n";
                 content += "\t\t}";
 
                 if(!package.Projects.Last().Equals(x)){
@@ -383,11 +420,95 @@ namespace miccore.Utility{
                     }
                 });
                 refer += "]";
+
+                string serv = "[";
+                x.Services.ForEach(y => {
+                    serv += $"\"{y}\"";
+                    if(x.Services.Last() != y){
+                        serv += ",";
+                    }
+                });
+                serv += "]";
+
                 content += "\t\t{ \n";
                 content += $"\t\t\t\"name\": \"{x.Name}\",\n";
                 content += $"\t\t\t\"port\": \"{x.Port}\",\n";
                 content += $"\t\t\t\"dockerUrl\": \"{x.DockerUrl}\",\n";
-                content += $"\t\t\t\"references\": {refer}\n";
+                content += $"\t\t\t\"references\": {refer},\n";
+                content += $"\t\t\t\"services\": {serv}\n";
+                content += "\t\t}";
+
+                if(!package.Projects.Last().Equals(x)){
+                    content += ", \n";
+                }
+            });
+            content += $"\n\t]\n";            
+            content += "}";            
+
+            try
+            {
+                File.WriteAllText(filepath, content);
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"ERROR - Failed package json project injection in file: {ex.Message}.");
+            }
+            
+        }
+
+
+        public void PackageJsonReferenceServiceInject(string filepath, string projectName, string inject){
+
+            if(!File.Exists(filepath)){
+                Console.WriteLine("\n\nError: Package file not found\n\n");
+                return;
+            }
+
+            var text = File.ReadAllText(filepath);
+            Package package = JsonConvert.DeserializeObject<Package>(text);
+            
+            
+            Project project = new Project();
+            project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
+            package.Projects.Remove(project);
+            project.Services.Add(inject);
+            package.Projects.Add(project);
+            
+
+            string content = "{\n";
+
+            content += $"\t\"name\": \"{package.Name}\",\n";
+            content += $"\t\"version\": \"{package.Version}\",\n";
+            content += $"\t\"projects\": [\n";
+
+            package.Projects.ForEach(x => {
+
+
+                string refer = "[";
+                x.references.ForEach(y => {
+                    refer += $"\"{y.ToLower()}\"";
+                    if(x.references.Last() != y){
+                        refer += ",";
+                    }
+                });
+
+                refer += "]";
+
+                string serv = "[";
+                x.Services.ForEach(y => {
+                    serv += $"\"{y}\"";
+                    if(x.Services.Last() != y){
+                        serv += ",";
+                    }
+                });
+                serv += "]";
+
+                content += "\t\t{ \n";
+                content += $"\t\t\t\"name\": \"{x.Name}\",\n";
+                content += $"\t\t\t\"port\": \"{x.Port}\",\n";
+                content += $"\t\t\t\"dockerUrl\": \"{x.DockerUrl}\",\n";
+                content += $"\t\t\t\"references\": {refer},\n";
+                content += $"\t\t\t\"services\": {serv}\n";
                 content += "\t\t}";
 
                 if(!package.Projects.Last().Equals(x)){

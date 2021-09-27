@@ -8,5 +8,6 @@ namespace miccore.Models
         public string Port {get; set;}
         public string DockerUrl {get; set;}
         public List<string> references {get; set;}
+        public List<string> Services {get; set;}
     }
 }

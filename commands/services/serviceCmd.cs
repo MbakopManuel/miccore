@@ -98,6 +98,10 @@ namespace miccore.service
                 injection.OcelotProjectServiceInjection($"{current}/package.json",$"{current}/Gateway.WebApi/ocelot.json", _project, _name);
 
 
+                OutputToConsole($"   package json service injection ... \n");
+                injection.PackageJsonReferenceServiceInject($"{current}/package.json", _project, _name);
+
+
                 OutputToConsole($" \n******************************************************************************************** \n");
                 OutputToConsole($"   solution building ... \n");
                 OutputToConsole($" \n******************************************************************************************** \n\n");

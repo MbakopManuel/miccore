@@ -49,11 +49,11 @@ namespace miccore.reference
 
                     InjectionUtility injection = new InjectionUtility();
 
-                    // OutputToConsole($" \n******************************************************************************************** \n");
-                    // OutputToConsole($"   mapper profiles injections ... \n");
-                    // OutputToConsole($" \n******************************************************************************************** \n\n");
-                    // injection.ServiceNameSpacesImportationForReference($"./{_to}.Microservice/{_to}.Microservice/Services/Services.cs", $"{_from}.Microservice");
-                    // injection.ServiceProfileAddingForReference($"./{_to}.Microservice/{_to}.Microservice/Services/Services.cs");
+                    OutputToConsole($" \n******************************************************************************************** \n");
+                    OutputToConsole($"   mapper profiles injections ... \n");
+                    OutputToConsole($" \n******************************************************************************************** \n\n");
+                    injection.ServiceNameSpacesImportationForReference($"./package.json", $"./{_to}.Microservice/{_to}.Microservice/Services/Services.cs", _from);
+                    injection.ServiceProfileAddingForReference($"./package.json",$"./{_to}.Microservice/{_to}.Microservice/Services/Services.cs", _from);
 
 
                     OutputToConsole($" \n******************************************************************************************** \n");
