@@ -55,15 +55,14 @@ namespace miccore.Utility{
         }
 
          public void ServiceNameSpacesImportationForReference(string packageJson, string filepath, string projectName){
-              if(!File.Exists(filepath)){
+            if(!File.Exists(packageJson)){
                 Console.WriteLine("\n\nError: Package file not found\n\n");
                 return;
             }
 
-            var text1 = File.ReadAllText(filepath);
+            var text1 = File.ReadAllText(packageJson);
             Package package = JsonConvert.DeserializeObject<Package>(text1);
             var project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
-
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "/* End Import */");
             var pre = text.Take(i - 1);
@@ -79,8 +78,10 @@ namespace miccore.Utility{
                 };
                 
                 pre = pre.Concat(add);
-                pre = pre.Concat(post);
             });
+
+
+            pre = pre.Concat(post);
             
 
             try
@@ -154,14 +155,16 @@ namespace miccore.Utility{
 
         public void ServiceProfileAddingForReference(string packageJson, string filepath, string projectName){
 
-            if(!File.Exists(filepath)){
+            if(!File.Exists(packageJson)){
                 Console.WriteLine("\n\nError: Package file not found\n\n");
                 return;
             }
 
-            var text1 = File.ReadAllText(filepath);
+            var text1 = File.ReadAllText(packageJson);
             Package package = JsonConvert.DeserializeObject<Package>(text1);
             var project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
+
+            Console.WriteLine(string.Join(',', project.references));
 
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "                /** End Adding Profiles */");
@@ -178,8 +181,9 @@ namespace miccore.Utility{
                 };
                 
                 pre = pre.Concat(add);
-                pre = pre.Concat(post);
             });
+            
+            pre = pre.Concat(post);
             
            
 
@@ -318,10 +322,13 @@ namespace miccore.Utility{
                                     package.Projects.Last().DockerUrl.Split('.')[2]+'.'+
                                     (lasturl+1).ToString();
             project.references = new List<string>(){};
+            
+            project.Services.Add(projectName.Split('.')[0]);
 
             if(auth){
                 RenameUtility rename = new RenameUtility();
                 rename.Rename($".", "44373", project.Port);
+                project.Services.Add("Role");
             }
 
             package.Projects.Add(project);

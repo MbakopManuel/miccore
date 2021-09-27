@@ -50,19 +50,20 @@ namespace miccore.reference
                     InjectionUtility injection = new InjectionUtility();
 
                     OutputToConsole($" \n******************************************************************************************** \n");
-                    OutputToConsole($"   mapper profiles injections ... \n");
+                    OutputToConsole($"   package json reference injection ... \n");
+                    OutputToConsole($" \n******************************************************************************************** \n\n");
+                    injection.PackageJsonReferenceInject("./package.json", _to, _from);
+
+
+                    OutputToConsole($" \n******************************************************************************************** \n");
+                    OutputToConsole($"   mapper profiles injections  ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
                     injection.ServiceNameSpacesImportationForReference($"./package.json", $"./{_to}.Microservice/{_to}.Microservice/Services/Services.cs", _from);
                     injection.ServiceProfileAddingForReference($"./package.json",$"./{_to}.Microservice/{_to}.Microservice/Services/Services.cs", _from);
 
 
                     OutputToConsole($" \n******************************************************************************************** \n");
-                    OutputToConsole($"   package json reference injection ... \n");
-                    OutputToConsole($" \n******************************************************************************************** \n\n");
-                    injection.PackageJsonReferenceInject("./package.json", _to, _from);
-
-                    OutputToConsole($" \n******************************************************************************************** \n");
-                    OutputToConsole($"   package json reference injection ... \n");
+                    OutputToConsole($"   docker reference injection ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
                     injection.DockerReferenceInjection("./docker-compose.yml", _to);
 
