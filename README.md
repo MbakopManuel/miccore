@@ -129,6 +129,20 @@ npm install -g pm2
 
 after it you only have to do __docker-compose up -d --build__ (before it, make sure you had intalled docker and docker-compose in your system)
 
+##  Reference a project in another project
+
+```sh
+miccore add reference --from projectNameToReference --to projectNameWhereReferenceWillBeApplied
+```
+once the command executed, all mapper profile of the project _from will be registered in project _to
+
+##  Run all Migrations
+
+```sh
+miccore migrate
+```
+this command based on the dependency tree will execute all the migrations of all the microservices in order of dependency
+
 ##  Startup project file
 
 once the microservice project is created, you have to go to the startup.cs file and update the database connection elements.
