@@ -15,6 +15,12 @@ namespace miccore
     class migrateCmd : miccoreBaseCmd
     {
 
+
+        [Option("--dotnet_exec_path | -d",
+                Description = "if mentionned, serve the builder folder and launch the app",
+                ShowInHelpText = true
+                )]
+        public string _dotnet {get;}
         
         public migrateCmd(ILogger<newCmd> logger, IConsole console){
             _logger = logger;
@@ -66,6 +72,12 @@ namespace miccore
                     // schedule.ForEach(x => Console.WriteLine(x));
 
                     var current = Path.GetFullPath(".");
+                    var exec = "";
+                    if(string.IsNullOrEmpty(_dotnet)){
+                        exec = "dotnet-ef";
+                    }else{
+                        exec = _dotnet;
+                    }
                     schedule.ForEach( x => {
                         var name = $"{x[0].ToString().ToUpper()}{x.Substring(1)}.Microservice";
 
@@ -74,7 +86,8 @@ namespace miccore
                         OutputToConsole($" \n******************************************************************************************** \n\n");
 
                         Directory.SetCurrentDirectory($"{current}/{name}/{name}");
-                        var process = Process.Start("dotnet", "ef database update");
+                        
+                        var process = Process.Start(exec, "database update");
                         process.WaitForExit();
                     });
 

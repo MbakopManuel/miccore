@@ -140,8 +140,10 @@ once the command executed, all mapper profile of the project _from will be regis
 
 ```sh
 miccore migrate
-```
+``` 
 this command based on the dependency tree will execute all the migrations of all the microservices in order of dependency
+
+you can add __-d__ or __--dotnet_exec_path__ to pass the execution path of dotnet-ef . if you don't specify it, miccore will check with the default path
 
 ##  Startup project file
 

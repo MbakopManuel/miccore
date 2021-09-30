@@ -72,8 +72,8 @@ namespace miccore.Utility{
                 string[] add = new string[]{
                     $"\n",
                     $"\t//{projectName} namespaces importation",
-                    $"\tusing {projectName}.Operations.{serviceName}.MapperProfiles;",
-                    $"\tusing {projectName}.Services.{serviceName}.MapperProfiles;",
+                    $"\tusing {projectName}.Microservice.Operations.{serviceName}.MapperProfiles;",
+                    $"\tusing {projectName}.Microservice.Services.{serviceName}.MapperProfiles;",
                     $"\n",
                 };
                 
@@ -322,7 +322,7 @@ namespace miccore.Utility{
                                     package.Projects.Last().DockerUrl.Split('.')[2]+'.'+
                                     (lasturl+1).ToString();
             project.references = new List<string>(){};
-            
+            project.Services = new List<string>(){};
             project.Services.Add(projectName.Split('.')[0]);
 
             if(auth){
