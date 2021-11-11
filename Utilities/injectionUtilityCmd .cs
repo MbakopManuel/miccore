@@ -311,9 +311,17 @@ namespace miccore.Utility{
             var text = File.ReadAllText(filepath);
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
-            int lastport = Int32.Parse(package.Projects.Last().Port);
-            int lasturl = Int32.Parse(package.Projects.Last().DockerUrl.Split('.')[3]);
-
+            int lastport = int.Parse(package.Projects.First().Port);
+            int i = 0;
+            foreach (var item in package.Projects)
+            {
+                if(lastport < int.Parse(item.Port)){
+                    lastport = int.Parse(item.Port);
+                    i++;
+                }
+            }
+            int lasturl = Int32.Parse(package.Projects.ElementAt(i).DockerUrl.Split('.')[3]);
+           
             Project project = new Project();
             project.Name = projectName;
             project.Port = (lastport + 1).ToString();
@@ -553,8 +561,16 @@ namespace miccore.Utility{
             var text = File.ReadAllText("./package.json");
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
-            int lastport = Int32.Parse(package.Projects.Last().Port);
-            string lasturl = package.Projects.Last().DockerUrl;
+            int lastport = int.Parse(package.Projects.First().Port);
+            int i = 0;
+            foreach (var item in package.Projects)
+            {
+                if(lastport < int.Parse(item.Port)){
+                    lastport = int.Parse(item.Port);
+                    i++;
+                }
+            }
+            string lasturl = package.Projects.ElementAt(i).DockerUrl;
 
             var ocelotText = File.ReadAllText(filepath);
             Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
@@ -675,8 +691,16 @@ namespace miccore.Utility{
             var text = File.ReadAllText("./package.json");
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
-            int lastport = Int32.Parse(package.Projects.Last().Port);
-            string lasturl = package.Projects.Last().DockerUrl;
+            int lastport = int.Parse(package.Projects.First().Port);
+            int i = 0;
+            foreach (var item in package.Projects)
+            {
+                if(lastport < int.Parse(item.Port)){
+                    lastport = int.Parse(item.Port);
+                    i++;
+                }
+            }
+            string lasturl = package.Projects.ElementAt(i).DockerUrl;
             
             var deserialise = new YamlDotNet.Serialization.Deserializer();
 
@@ -733,8 +757,16 @@ namespace miccore.Utility{
             var text = File.ReadAllText("./package.json");
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
-            int lastport = Int32.Parse(package.Projects.Last().Port);
-            string lasturl = package.Projects.Last().DockerUrl;
+            int lastport = int.Parse(package.Projects.First().Port);
+            int i = 0;
+            foreach (var item in package.Projects)
+            {
+                if(lastport < int.Parse(item.Port)){
+                    lastport = int.Parse(item.Port);
+                    i++;
+                }
+            }
+            string lasturl = package.Projects.ElementAt(i).DockerUrl;
             
             var deserialise = new YamlDotNet.Serialization.Deserializer();
 
@@ -1189,6 +1221,121 @@ namespace miccore.Utility{
                     }
                     
                 });
+
+
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
+            }
+            
+        }
+
+
+        public void DockerFilesCreationAndInjectOut(string packageFile, string OutFolder){
+             
+            try{
+                if(Directory.Exists(OutFolder)){
+                     var directory = new DirectoryInfo(OutFolder) { Attributes = FileAttributes.Normal };
+
+                    foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
+                    {
+                        info.Attributes = FileAttributes.Normal;
+                    }
+
+                    directory.Delete(true);
+                }
+
+                Directory.CreateDirectory(OutFolder);
+               
+                var text = File.ReadAllText(packageFile);
+                Package package = JsonConvert.DeserializeObject<Package>(text);
+                var ocelotText = File.ReadAllText("./Gateway.WebApi/ocelot.json");
+                Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
+
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" Ocelot docker file generation ...\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                
+                package.Projects.ForEach(x => {
+                    
+                    var routes = ocelot.Routes.Where(y => y.DownstreamHostAndPorts[0].Port.ToString() == x.Port)
+                                            .ToList();
+                    foreach (var item in routes)
+                    {
+                        item.DownstreamHostAndPorts[0].Host = x.DockerUrl.ToString();
+                        item.DownstreamHostAndPorts[0].Port = 80;
+                    }
+                    var name = x.Name.Split('.')[0]+'s';
+                    var conf = ocelot.SwaggerEndPoints.Where(y => y.Key == name).FirstOrDefault();
+                    if(conf != null){
+                        conf.Config[0].Url = $"http://{x.DockerUrl}:80/swagger/v1/swagger.json";
+                    }
+                    
+                });
+                OcelotFileWrite(ocelot, "./Gateway.WebApi/ocelot.docker.json");
+
+
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" building of the solution\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                var process1 = Process.Start("dotnet", "build");
+                process1.WaitForExit();
+
+                Directory.SetCurrentDirectory(OutFolder);
+                
+                package.Projects.ForEach(x => {
+
+                    if(x.Name == "Gateway.WebApi"){
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" building of {x.Name}\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}.csproj");
+                        process1.WaitForExit();
+                        
+                        process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
+                        process1.WaitForExit();
+
+                        var content = $"FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build\n";
+                        content += $"WORKDIR /app";
+                        content += $"COPY ./{x.Name}/. .";
+                        content += $"RUN mv ocelot.docker.json ocelot.json";
+                        content += $"ENTRYPOINT [\"dotnet\", \"{x.Name}.dll\"]";
+                        File.WriteAllText($"./Dockerfile.{x.Name.Split('.')[0]}", content);
+                    
+                    }else{
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" building of {x.Name}\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}/{x.Name}.csproj");
+                        process1.WaitForExit();
+                        
+                        process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
+                        process1.WaitForExit();
+
+                        var content = $"FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build\n";
+                        content += $"WORKDIR /app";
+                        content += $"COPY ./{x.Name}/. .";
+                        content += $"ENTRYPOINT [\"dotnet\", \"{x.Name}.dll\"]";
+                        File.WriteAllText($"./Dockerfile.{x.Name.Split('.')[0]}", content);
+        
+                    }
+                    
+                });
+
+                File.Copy("../package.json", "./package.json");
+
+                var content = $"FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build\n";
+                content += $"WORKDIR /app";
+                content += $"COPY ./ .";
+                content += $"FROM mcr.microsoft.com/dotnet/sdk:5.0";
+                content += $"WORKDIR /app";
+                content += $"COPY --from=build /app/ .";
+                content += $"RUN dotnet tool install --global Miccore.Net";
+                content += $"RUN dotnet tool install --global dotnet-ef";
+                content += $"RUN /root/.dotnet/tools/miccore build --docker";
+                content += $"CMD /root/.dotnet/tools/miccore migrate -d /root/.dotnet/tools/dotnet-ef";
+                File.WriteAllText($"./Dockerfile.Migration", content);
 
 
             }

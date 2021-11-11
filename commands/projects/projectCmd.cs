@@ -52,7 +52,7 @@ namespace miccore.project
                         OutputToConsole($" \n******************************************************************************************** \n");
                         OutputToConsole($"   add microservice with authentication with name {_name} ... \n");
                         OutputToConsole($" \n******************************************************************************************** \n\n");
-                        runClone(_name, _source_user_microservice);
+                        runCloneProject(_name, _source_user_microservice);
 
                         OutputToConsole($" \n******************************************************************************************** \n");
                         OutputToConsole($"  renaming ... \n");
@@ -67,7 +67,7 @@ namespace miccore.project
                         OutputToConsole($" \n******************************************************************************************** \n");
                         OutputToConsole($"   add microservice without authentication with name {_name} ... \n");
                         OutputToConsole($" \n******************************************************************************************** \n\n");
-                        runClone(_name, _source_sample_microservice); 
+                        runCloneProject(_name, _source_sample_microservice); 
                         
 
                         OutputToConsole($" \n******************************************************************************************** \n");

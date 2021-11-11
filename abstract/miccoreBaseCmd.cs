@@ -90,26 +90,23 @@ namespace miccore
             process1 = Process.Start("git", "init");
             process1.WaitForExit();
             
-            // var deserialise = new YamlDotNet.Serialization.Deserializer();
+            
+        }
 
-            // try
-            // {
-            //     using (var reader = new StreamReader("./docker-compose.yml"))
-            //     {
-            //         var obj = deserialise.Deserialize<Dictionary<object, object>>(reader);
-            //         string json = JsonConvert.SerializeObject(obj, Formatting.Indented);
-            //         OutputToConsole($" \n******************************************************************************************** \n");
-            //         OutputToConsole($" docker-compose file \n");
-            //         OutputToConsole($" \n******************************************************************************************** \n\n");
-            //         Console.WriteLine(json);
-                    
+         protected void runCloneProject(string name, string source){
+           
+            var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
+            process1.WaitForExit();
+            
+            OutputToConsole($" \n******************************************************************************************** \n");
+            OutputToConsole($" building of the solution\n");
+            OutputToConsole($" \n******************************************************************************************** \n");
 
-            //     }
-            // }
-            // catch (System.Exception ex)
-            // {
-            //     Console.WriteLine($"ERROR - Failed ocelot project injection in file: {ex.Message}.");
-            // }
+            Directory.SetCurrentDirectory($"./{name}/");
+            process1 = Process.Start("dotnet", "build");
+            process1.WaitForExit();
+
+            deleteFolder("./.git/");
             
         }
 
