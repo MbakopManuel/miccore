@@ -42,8 +42,8 @@ namespace miccore.reference
                     OutputToConsole($"   Reference adding ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
 
-                    var from = $"{_from}.Microservice/{_from}.Microservice/{_from}.Microservice.csproj";
-                    var to = $"{_to}.Microservice/{_to}.Microservice/{_to}.Microservice.csproj";
+                    var from = $"{_from}.Api/{_from}.Api/{_from}.Api.csproj";
+                    var to = $"{_to}.Api/{_to}.Api/{_to}.Api.csproj";
                     var process = Process.Start("dotnet", $"add {to} reference {from}");
                     process.WaitForExit();
 
@@ -58,8 +58,8 @@ namespace miccore.reference
                     OutputToConsole($" \n******************************************************************************************** \n");
                     OutputToConsole($"   mapper profiles injections  ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
-                    injection.ServiceNameSpacesImportationForReference($"./package.json", $"./{_to}.Microservice/{_to}.Microservice/Services/Services.cs", _from);
-                    injection.ServiceProfileAddingForReference($"./package.json",$"./{_to}.Microservice/{_to}.Microservice/Services/Services.cs", _from);
+                    injection.ServiceNameSpacesImportationForReference($"./package.json", $"./{_to}.Api/{_to}.Api/Services/Services.cs", _from);
+                    injection.ServiceProfileAddingForReference($"./package.json",$"./{_to}.Api/{_to}.Api/Services/Services.cs", _from);
 
 
                     OutputToConsole($" \n******************************************************************************************** \n");

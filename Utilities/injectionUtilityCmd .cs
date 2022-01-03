@@ -54,7 +54,9 @@ namespace miccore.Utility{
             
         }
 
-         public void ServiceNameSpacesImportationForReference(string packageJson, string filepath, string projectName){
+
+        
+        public void ServiceNameSpacesImportationForReference(string packageJson, string filepath, string projectName){
             if(!File.Exists(packageJson)){
                 Console.WriteLine("\n\nError: Package file not found\n\n");
                 return;
@@ -62,18 +64,21 @@ namespace miccore.Utility{
 
             var text1 = File.ReadAllText(packageJson);
             Package package = JsonConvert.DeserializeObject<Package>(text1);
-            var project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
+            var project = package.Projects.Where(x => x.Name == $"{projectName}.Api").FirstOrDefault();
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "/* End Import */");
             var pre = text.Take(i - 1);
             var post = text.Skip(i-1);
 
+            string companyName = package.CompanyName;
+            string projetName = package.Name;
+
             project.Services.ForEach(serviceName => {
                 string[] add = new string[]{
                     $"\n",
-                    $"\t//{projectName} namespaces importation",
-                    $"\tusing {projectName}.Microservice.Operations.{serviceName}.MapperProfiles;",
-                    $"\tusing {projectName}.Microservice.Services.{serviceName}.MapperProfiles;",
+                    $"\t//{companyName}.{projetName}.{projectName} namespaces importation",
+                    $"\tusing {companyName}.{projetName}.{projectName}.Api.Operations.{serviceName}.MapperProfiles;",
+                    $"\tusing {companyName}.{projetName}.{projectName}.Api.Services.{serviceName}.MapperProfiles;",
                     $"\n",
                 };
                 
@@ -162,7 +167,7 @@ namespace miccore.Utility{
 
             var text1 = File.ReadAllText(packageJson);
             Package package = JsonConvert.DeserializeObject<Package>(text1);
-            var project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
+            var project = package.Projects.Where(x => x.Name == $"{projectName}.Api").FirstOrDefault();
 
             Console.WriteLine(string.Join(',', project.references));
 
@@ -236,6 +241,8 @@ namespace miccore.Utility{
             }
             
         }
+
+
         public void DBContextApplicationInjection(string filepath, string serviceName){
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "        /** End DBContext Adding */");
@@ -262,6 +269,7 @@ namespace miccore.Utility{
             }
             
         }
+
         public void DBContextIApplicationInjection(string filepath, string serviceName){
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "        /** End Interface DBContext Adding */");
@@ -343,6 +351,7 @@ namespace miccore.Utility{
 
             string content = "{\n";
 
+            content += $"\t\"companyName\": \"{package.CompanyName}\",\n";
             content += $"\t\"name\": \"{package.Name}\",\n";
             content += $"\t\"version\": \"{package.Version}\",\n";
             content += $"\t\"projects\": [\n";
@@ -412,7 +421,7 @@ namespace miccore.Utility{
             
             
             Project project = new Project();
-            project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
+            project = package.Projects.Where(x => x.Name == $"{projectName}.Api").FirstOrDefault();
             package.Projects.Remove(project);
             project.references.Add(inject.ToLower());
             package.Projects.Add(project);
@@ -420,6 +429,7 @@ namespace miccore.Utility{
 
             string content = "{\n";
 
+            content += $"\t\"companyName\": \"{package.CompanyName}\",\n";
             content += $"\t\"name\": \"{package.Name}\",\n";
             content += $"\t\"version\": \"{package.Version}\",\n";
             content += $"\t\"projects\": [\n";
@@ -484,7 +494,7 @@ namespace miccore.Utility{
             
             
             Project project = new Project();
-            project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
+            project = package.Projects.Where(x => x.Name == $"{projectName}.Api").FirstOrDefault();
             package.Projects.Remove(project);
             project.Services.Add(inject);
             package.Projects.Add(project);
@@ -492,6 +502,8 @@ namespace miccore.Utility{
 
             string content = "{\n";
 
+
+            content += $"\t\"companyName\": \"{package.CompanyName}\",\n";
             content += $"\t\"name\": \"{package.Name}\",\n";
             content += $"\t\"version\": \"{package.Version}\",\n";
             content += $"\t\"projects\": [\n";
@@ -721,12 +733,12 @@ namespace miccore.Utility{
                     dict.container_name = projectName.ToLower();
                     dict.ports.RemoveAt(0);
                     dict.ports.Add(lastport+":"+80);
-                    dict.build.context = "./"+projectName+".Microservice";
+                    dict.build.context = "./"+projectName+".Api";
                     dict.build.dockerfile = "Dockerfile."+projectName;
                     dict.networks.static_network.ipv4_address = lasturl;
                     
                     var project = new Project();
-                    project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
+                    project = package.Projects.Where(x => x.Name == $"{projectName}.Api").FirstOrDefault();
                     project.references.ForEach(y => {
                         dict.depends_on.Add(y);
                     });
@@ -786,7 +798,7 @@ namespace miccore.Utility{
 
                    
                     var project = new Project();
-                    project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
+                    project = package.Projects.Where(x => x.Name == $"{projectName}.Api").FirstOrDefault();
                     project.references.ForEach(y => {
                         dict.depends_on.Add(y);
                     });
@@ -833,9 +845,11 @@ namespace miccore.Utility{
                 //delete project in package json
                 var text = File.ReadAllText("./package.json");
                 Package package = JsonConvert.DeserializeObject<Package>(text);
-                package.Projects = package.Projects.Where(x => x.Name != $"{projectName}.Microservice").ToList();
+                package.Projects = package.Projects.Where(x => x.Name != $"{projectName}.Api").ToList();
                 string content = "{\n";
 
+
+                content += $"\t\"companyName\": \"{package.CompanyName}\",\n";
                 content += $"\t\"name\": \"{package.Name}\",\n";
                 content += $"\t\"version\": \"{package.Version}\",\n";
                 content += $"\t\"projects\": [\n";
@@ -961,7 +975,7 @@ namespace miccore.Utility{
             
             int lastport = Int32.Parse(
                                     package.Projects
-                                            .Where(x => x.Name == $"{projectName}.Microservice")
+                                            .Where(x => x.Name == $"{projectName}.Api")
                                             .First()
                                             .Port
                                     );

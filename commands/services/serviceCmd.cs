@@ -41,10 +41,23 @@ namespace miccore.service
                     return Task.FromResult(1);
                 }
 
-                if(!Directory.Exists($"./{_project}.Microservice")){
-                    OutputError($"\nProject {_project} doesn't exist, choose and existing project and don't write the name with the mention .Microservice\n\n");
+                if(!Directory.Exists($"./{_project}.Api")){
+                    OutputError($"\nProject {_project} doesn't exist, choose and existing project and don't write the name with the mention .Api\n\n");
                     return Task.FromResult(1);
                 }
+
+                // check if package json file exist
+                if(!File.Exists(filepath)){
+                    OutputError("\n\nError: Package file not found\n\n");
+                    return;
+                }
+                // get the company name to the package json file
+                var text = File.ReadAllText(filepath);
+                Package package = JsonConvert.DeserializeObject<Package>(text);
+                // company name
+                string companyName = package.CompanyName;
+                // project name
+                string projectName = package.Name;
                 
                 _name = char.ToUpper(_name[0]) + _name.Substring(1).ToLower();
                 var current = Path.GetFullPath(".");
@@ -61,19 +74,21 @@ namespace miccore.service
 
                 setNormalFolder(name);
     
-                DirectoryCopy($"{name}/samples-operation", $"{current}/{_project}.Microservice/{_project}.Microservice/Operations/{_name}", true);
-                // rename.Rename($"{current}/{_project}.Microservice", "samples-operation", _name);
+                DirectoryCopy($"{name}/samples-operation", $"{current}/{_project}.Api/{_project}.Api/Operations/{_name}", true);
+                // rename.Rename($"{current}/{_project}.Api", "samples-operation", _name);
 
-                DirectoryCopy($"{name}/samples-service", $"{current}/{_project}.Microservice/{_project}.Microservice/Services/{_name}", true);
-                // rename.Rename($"{current}/{_project}.Microservice", "samples-service", _name);
+                DirectoryCopy($"{name}/samples-service", $"{current}/{_project}.Api/{_project}.Api/Services/{_name}", true);
+                // rename.Rename($"{current}/{_project}.Api", "samples-service", _name);
 
-                DirectoryCopy($"{name}/samples-repository", $"{current}/{_project}.Microservice/{_project}.Microservice/Repositories/{_name}", true);
-                // rename.Rename($"{current}/{_project}.Microservice", "samples-repository", _name);
+                DirectoryCopy($"{name}/samples-repository", $"{current}/{_project}.Api/{_project}.Api/Repositories/{_name}", true);
+                // rename.Rename($"{current}/{_project}.Api", "samples-repository", _name);
 
                 RenameUtility rename = new RenameUtility();
-                rename.Rename($"{current}/{_project}.Microservice", "Sample", _name);
-                rename.Rename($"{current}/{_project}.Microservice", "sample",  char.ToLower(_name[0]) + _name.Substring(1).ToLower());
-                rename.Rename($"{current}/{_project}.Microservice", $"{_name}.Microservice", $"{_project}.Microservice");
+                rename.Rename($"{current}/{_project}.Api", "Miccore.Net", companyName);
+                rename.Rename($"{current}/{_project}.Api", "webapi_template", projectName);
+                rename.Rename($"{current}/{_project}.Api", "Sample", _name);
+                rename.Rename($"{current}/{_project}.Api", "sample",  char.ToLower(_name[0]) + _name.Substring(1).ToLower());
+                rename.Rename($"{current}/{_project}.Api", $"{_name}.Api", $"{_project}.Api");
 
 
                 OutputToConsole($" \n******************************************************************************************** \n");
@@ -82,16 +97,16 @@ namespace miccore.service
 
                 InjectionUtility injection = new InjectionUtility();
                 OutputToConsole($"   services and repositories injections ... \n");
-                injection.ServiceNameSpacesImportation($"{current}/{_project}.Microservice/{_project}.Microservice/Services/Services.cs", $"{_project}.Microservice", _name);
-                injection.ServiceRepositoryServicesInjection($"{current}/{_project}.Microservice/{_project}.Microservice/Services/Services.cs", _name);
-                injection.ServiceProfileAdding($"{current}/{_project}.Microservice/{_project}.Microservice/Services/Services.cs", _name);
+                injection.ServiceNameSpacesImportation($"{current}/{_project}.Api/{_project}.Api/Services/Services.cs", $"{companyName}.{projectName}.{_project}.Api", _name);
+                injection.ServiceRepositoryServicesInjection($"{current}/{_project}.Api/{_project}.Api/Services/Services.cs", _name);
+                injection.ServiceProfileAdding($"{current}/{_project}.Api/{_project}.Api/Services/Services.cs", _name);
                 
                 OutputToConsole($"   DBContext model creations ... \n");
-                injection.DBContextNameSpacesImportation($"{current}/{_project}.Microservice/{_project}.Microservice/Data/IApplicationDbContext.cs", $"{_project}.Microservice", _name);
-                injection.DBContextIApplicationInjection($"{current}/{_project}.Microservice/{_project}.Microservice/Data/IApplicationDbContext.cs",  _name);
+                injection.DBContextNameSpacesImportation($"{current}/{_project}.Api/{_project}.Api/Data/IApplicationDbContext.cs", $"{companyName}.{projectName}.{_project}.Api", _name);
+                injection.DBContextIApplicationInjection($"{current}/{_project}.Api/{_project}.Api/Data/IApplicationDbContext.cs",  _name);
 
-                injection.DBContextNameSpacesImportation($"{current}/{_project}.Microservice/{_project}.Microservice/Data/ApplicationDbContext.cs", $"{_project}.Microservice", _name);
-                injection.DBContextApplicationInjection($"{current}/{_project}.Microservice/{_project}.Microservice/Data/ApplicationDbContext.cs",  _name);
+                injection.DBContextNameSpacesImportation($"{current}/{_project}.Api/{_project}.Api/Data/ApplicationDbContext.cs", $"{companyName}.{projectName}.{_project}.Api", _name);
+                injection.DBContextApplicationInjection($"{current}/{_project}.Api/{_project}.Api/Data/ApplicationDbContext.cs",  _name);
                 
                 
                 OutputToConsole($"   ocelot project service injection ... \n");

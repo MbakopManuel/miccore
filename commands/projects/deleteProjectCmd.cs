@@ -41,13 +41,13 @@ namespace miccore.project
                     OutputToConsole($" \n******************************************************************************************** \n");
                     OutputToConsole($"  remove project to the solution ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
-                    var process = Process.Start("dotnet", $"sln Microservice.WebApi.sln remove ./{_name}.Microservice/{_name}.Microservice.csproj");
+                    var process = Process.Start("dotnet", $"sln Microservice.WebApi.sln remove ./{_name}.Api/{_name}.Api.csproj");
                     process.WaitForExit();
 
                     OutputToConsole($" \n******************************************************************************************** \n");
                     OutputToConsole($"   delete microservice project name name {_name} ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
-                    deleteFolder($"./{_name}.Microservice/");
+                    deleteFolder($"./{_name}.Api/");
 
                     OutputToConsole($" \n******************************************************************************************** \n");
                     OutputToConsole($"  build the solution ... \n");

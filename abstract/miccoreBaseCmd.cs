@@ -155,7 +155,7 @@ namespace miccore
 
 
         /**
-        * copy directorye
+        * copy directory
         */
         protected void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
         {
