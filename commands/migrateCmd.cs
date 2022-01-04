@@ -91,8 +91,7 @@ namespace miccore
                 var current = Path.GetFullPath(".");
 
                 // get dotnet ef command, if it's passed in parameter or is installed globally
-                var exec = "";
-                (string.IsNullOrEmpty(_dotnet)) ? exec = "dotnet-ef" : exec = _dotnet;
+                var exec = (string.IsNullOrEmpty(_dotnet)) ? "dotnet-ef" :  _dotnet;
                 // foreach project in the dependency tree, run migrations
                 schedule.ForEach( x => {
                     // name of the project

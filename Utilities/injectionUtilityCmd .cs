@@ -857,7 +857,10 @@ namespace miccore.Utility{
                 package.Projects.ForEach(x => {
                     content += "\t\t{ \n";
                     content += $"\t\t\t\"name\": \"{x.Name}\",\n";
-                    content += $"\t\t\t\"port\": \"{x.Port}\"\n";
+                    content += $"\t\t\t\"port\": \"{x.Port}\",\n";
+                    content += $"\t\t\t\"dockerUrl\": \"{x.DockerUrl}\",\n";
+                    content += $"\t\t\t\"references\": {x.references},\n";
+                    content += $"\t\t\t\"services\": {x.Services}\n";
                     content += "\t\t}";
 
                     if(!package.Projects.Last().Equals(x)){

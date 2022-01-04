@@ -22,7 +22,7 @@ namespace miccore
                 ShowInHelpText = true)]
         public string _name {get; set; }
 
-        [Option(" --company_name | -c",
+        [Option(" --company | -c",
                 CommandOptionType.SingleValue,
                 Description = "The name of the company",
                 ShowInHelpText = true)]

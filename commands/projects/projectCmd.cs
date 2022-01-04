@@ -6,6 +6,7 @@ using McMaster.Extensions.CommandLineUtils;
 using miccore.Utility;
 using miccore.Models;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace miccore.project
 {
@@ -50,12 +51,12 @@ namespace miccore.project
                 }
 
                 // check if package json file exist
-                if(!File.Exists(filepath)){
+                if(!File.Exists("./package.json")){
                     OutputError("\n\nError: Package file not found\n\n");
-                    return;
+                    return Task.FromResult(1);
                 }
                 // get the company name to the package json file
-                var text = File.ReadAllText(filepath);
+                var text = File.ReadAllText("./package.json");
                 Package package = JsonConvert.DeserializeObject<Package>(text);
                 // company name
                 string companyName = package.CompanyName;

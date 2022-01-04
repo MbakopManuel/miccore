@@ -35,6 +35,8 @@ namespace miccore
         {
             try
             {
+
+                InjectionUtility injection = new InjectionUtility();
                 // check if it is microservice webapi solution
                 if(!File.Exists("./Microservice.WebApi.sln")){
                     // if not return error
@@ -52,7 +54,6 @@ namespace miccore
                 // check if it's a build for docker
                 if(!_docker){
                     // if it's build, create sh files
-                    InjectionUtility injection = new InjectionUtility();
                     injection.SHFilesCreationAndInject("./package.json");
                     // add execution mode to file generated
                     bool ch = Chmod("./start.sh", "777");
@@ -61,7 +62,6 @@ namespace miccore
                 }
 
                 // create dockerfiles for building
-                InjectionUtility injection = new InjectionUtility();
                 injection.DockerFilesCreationAndInject("./package.json");
                 
                 return Task.FromResult(0);

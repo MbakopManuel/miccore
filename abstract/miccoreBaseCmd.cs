@@ -89,6 +89,8 @@ namespace miccore
 
             process1 = Process.Start("git", "init");
             process1.WaitForExit();
+            process1 = Process.Start("git", "branch -m master main");
+            process1.WaitForExit();
             
             
         }

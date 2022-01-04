@@ -3,8 +3,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
+using miccore.Models;
 using miccore.Utility;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace miccore.service
 {
@@ -47,12 +49,12 @@ namespace miccore.service
                 }
 
                 // check if package json file exist
-                if(!File.Exists(filepath)){
+                if(!File.Exists("./package.json")){
                     OutputError("\n\nError: Package file not found\n\n");
-                    return;
+                    return Task.FromResult(1);
                 }
                 // get the company name to the package json file
-                var text = File.ReadAllText(filepath);
+                var text = File.ReadAllText("./package.json");
                 Package package = JsonConvert.DeserializeObject<Package>(text);
                 // company name
                 string companyName = package.CompanyName;
@@ -61,7 +63,7 @@ namespace miccore.service
                 
                 _name = char.ToUpper(_name[0]) + _name.Substring(1).ToLower();
                 var current = Path.GetFullPath(".");
-                var temp = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                var temp = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
                 var name = temp + "/" + _name;
 
                 // Directory.CreateDirectory(name);
