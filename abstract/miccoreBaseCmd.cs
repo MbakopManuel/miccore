@@ -17,9 +17,12 @@ namespace miccore
         
         protected readonly string _template_url = "https://github.com/miccore/templates.git";
         protected readonly string _source_with_auth = "template/micro-dotnet-with-auth-v3";
+        protected readonly string _source_with_auth_sqlserver = "template/micro-dotnet-with-auth-v3-sqlserver";
         protected readonly string _source_without_auth = "template/micro-dotnet-without-auth-v3";
         protected readonly string _source_user_microservice = "template/user.microservice-v3";
+        protected readonly string _source_user_microservice_sqlserver = "template/user.microservice-v3-sqlserver";
         protected readonly string _source_sample_microservice = "template/sample.microservice-v3";
+        protected readonly string _source_sample_microservice_sqlserver = "template/sample.microservice-v3-sqlserver";
         protected readonly string _source_samples_services = "template/samples-services-v3";
         protected readonly string _source_xamarin = "template/xamarin";
 

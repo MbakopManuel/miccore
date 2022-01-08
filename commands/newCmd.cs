@@ -34,6 +34,12 @@ namespace miccore
                 ShowInHelpText = true)]
         public string _project {get; set; }
 
+        [Option(" --server | -s",
+                CommandOptionType.SingleValue,
+                Description = "The type of database server, we have two types (mysql or sqlserver). default: mysql",
+                ShowInHelpText = true)]
+        public string _server {get; set; }
+
         public newCmd(ILogger<newCmd> logger, IConsole console){
             _logger = logger;
             _console = console;
@@ -59,7 +65,16 @@ namespace miccore
                         OutputToConsole($" {_project} project creation with authentication with name {_name} ...\n");
                         OutputToConsole($" \n******************************************************************************************** \n\n");
                         // cloning the template from github
-                        runClone(_name, _source_with_auth);
+                        switch (_server)
+                        {
+                            case "sqlserver":
+                                runClone(_name, _source_with_auth_sqlserver);
+                            break;
+                            default:
+                                runClone(_name, _source_with_auth);
+                            break;
+                        }
+                        
                         rename.Rename($"./", "webapi_template", _name);
                         if(!string.IsNullOrEmpty(_companyName)) rename.Rename($"./", "Miccore.Net", _companyName);
 
@@ -96,7 +111,15 @@ namespace miccore
                             OutputToConsole($" {_project} project creation with authentication with name {_name} ...\n");
                             OutputToConsole($" \n******************************************************************************************** \n\n");
                             // cloning the template from github
-                            runClone(_name, _source_with_auth);
+                            switch (_server)
+                            {
+                                case "sqlserver":
+                                    runClone(_name, _source_with_auth_sqlserver);
+                                break;
+                                default:
+                                    runClone(_name, _source_with_auth);
+                                break;
+                            }
                             // rename in the project webapi_template by the name of project
                             rename.Rename($"./", "webapi_template", _name);
                             if(!string.IsNullOrEmpty(_companyName)) rename.Rename($"./", "Miccore.Net", _companyName);

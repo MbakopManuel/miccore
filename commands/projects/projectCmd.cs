@@ -24,6 +24,12 @@ namespace miccore.project
                 Description = "The name of the project",
                 ShowInHelpText = true)]
         public string _name {get; set; }
+
+        [Option(" --server | -s",
+                CommandOptionType.SingleValue,
+                Description = "The type of database server, we have two types (mysql or sqlserver). default: mysql",
+                ShowInHelpText = true)]
+        public string _server {get; set; }
         public projectCmd(ILogger<projectCmd> logger, IConsole console){
             _logger = logger;
             _console = console;
@@ -81,7 +87,17 @@ namespace miccore.project
                     OutputToConsole($" \n******************************************************************************************** \n");
                     OutputToConsole($"   add microservice with authentication with name {_name} ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
-                    runCloneProject(_name, _source_user_microservice);
+                    switch (_server)
+                    {
+                        case "sqlserver":
+                            runCloneProject(_name, _source_user_microservice_sqlserver);
+                        break;
+                        
+                        default:
+                            runCloneProject(_name, _source_user_microservice);
+                        break;
+                    }
+                    
 
                     // rename elements 
                     OutputToConsole($" \n******************************************************************************************** \n");
@@ -101,7 +117,16 @@ namespace miccore.project
                     OutputToConsole($" \n******************************************************************************************** \n");
                     OutputToConsole($"   add microservice without authentication with name {_name} ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
-                    runCloneProject(_name, _source_sample_microservice); 
+                    switch (_server)
+                    {
+                        case "sqlserver":
+                            runCloneProject(_name, _source_sample_microservice_sqlserver);
+                        break;
+                        
+                        default:
+                            runCloneProject(_name, _source_sample_microservice);
+                        break;
+                    }
                     
 
                     // rename the elements
