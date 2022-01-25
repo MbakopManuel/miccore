@@ -3,9 +3,13 @@ Tool for dotnet core webapi microservice creation and management or for xamarin 
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
-Require .Net core 5.0
+Require .Net core 6.0
 
-Miccore .Net is a CLI which allows a user to create a webapi project with a very specific microservice architecture. it also allows you to create a xamarin project.
+Miccore .Net is a CLI which allows a user to create a webapi project with a very specific microservice architecture. it also allows you to create a xamarin project
+
+in this new version, you can create procject or add project in solution with the database server type.
+
+**Note that this version is not compatible with the previous versions, migration will be available soon**
 
 
 ## Features
@@ -23,7 +27,7 @@ Miccore .Net is a CLI which allows a user to create a webapi project with a very
 
 Miccore .Net uses a number of open source projects to work properly:
 
-- [Dotnet Core 5.0](https://docs.microsoft.com/) - NET Core 5.0 Runtime enables you to run existing web/server applications. ...
+- [Dotnet Core 6.0](https://docs.microsoft.com/) - NET Core 5.0 Runtime enables you to run existing web/server applications. ...
 - [Ocelot](https://github.com/ThreeMammals/Ocelot) - Ocelot is a .NET API Gateway
 - [Xamarin](https://dotnet.microsoft.com/apps/xamarin) - Open-source mobile app platform for .NET
 - [Mysql](https://www.mysql.com/fr/) - MySQL Database Service est un service de base de données entièrement géré pour déployer des applications natives du cloud en utilisant la base de données​ ...
@@ -44,7 +48,9 @@ dotnet tool install --global Miccore.Net
 
 ## create a new project architecture
 
-You have the possibility to create the new project with or without authentication microservice regarding webapi, but the xamarin project comes with a simple architecture
+You have the possibility to create the new project with or without authentication microservice regarding webapi, but the xamarin project comes with a simple architecture.
+
+Now you can change the company name of the project by adding __--company__ or __-c__ followed by the name you want to pass.
 
 ### First Tab (webapi with auth):
 
@@ -56,6 +62,8 @@ or
 ```sh
 miccore new -p webapi -n project_name -wa
 ```
+
+you can now create a new project by choosing the database server. When you want to check the database server, you add the __--server__ or __-s__ option and specify the server name (**mysql** or **sqlserver**). The default is mysql. 
 
 ### Second Tab (webapi without auth):
 
@@ -79,12 +87,15 @@ or
 miccore new -p xamarin -n project_name
 ```
 
+
 ## concerning webapi we can
 
 Miccore .Net easily allows
 ### add new microservice to architecture
 
 also here, you have possibility to add microservice with or without authentication. the only thing you have to do is to add __--with-auth__ or __-wa__ at the next command if you want it with authentication
+
+you can now add a new microservice by choosing the database server. When you want to check the database server, you add the __--server__ or __-s__ option and specify the server name (**mysql** or **sqlserver**). The default is mysql. 
 
 ```sh
 miccore add project --name project_name
@@ -125,7 +136,7 @@ also note that for this to happen you need to install the __pm2__ tool from the 
 npm install -g pm2
 ```
 
-* add aftere command __--docker__ if you want to generate docker file and complete ocelot docker file with all routes.
+* add after the command __--docker__ if you want to generate docker file and complete ocelot docker file with all routes.
 
 after it you only have to do __docker-compose up -d --build__ (before it, make sure you had intalled docker and docker-compose in your system)
 
