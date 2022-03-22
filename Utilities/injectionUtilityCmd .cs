@@ -1167,6 +1167,33 @@ namespace miccore.Utility{
                 var ocelotText = File.ReadAllText("./Gateway.WebApi/ocelot.json");
                 Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
 
+                // create dist file
+                if(Directory.Exists("./dist")){
+                     var directory = new DirectoryInfo("./dist") { Attributes = FileAttributes.Normal };
+
+                    foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
+                    {
+                        info.Attributes = FileAttributes.Normal;
+                    }
+
+                    directory.Delete(true);
+                }
+
+                Directory.CreateDirectory("./dist");
+
+                 // build migration image
+                var process = Process.Start("docker", $"build . -t migration.image -f Dockerfile.Migration");
+                process.WaitForExit();
+
+                // save image in tar file
+                process = Process.Start("docker", $"save --output ./dist/migration.image.tar migration.image");
+                process.WaitForExit();
+
+                // copy docker compose file to dist
+                process = Process.Start("cp", $"docker-compose.yml ./dist/docker-compose.yml");
+                process.WaitForExit();
+
+                // build solution
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 Console.WriteLine($" Ocelot docker file generation ...\n");
                 Console.WriteLine($" \n******************************************************************************************** \n");
@@ -1204,8 +1231,14 @@ namespace miccore.Utility{
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
-                        
+                        // publish
                         process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}.csproj -c Release");
+                        process1.WaitForExit();
+                        // build image
+                        process1 = Process.Start("docker", $"build ./{x.Name} -t {x.Name.ToLower()}.image");
+                        process1.WaitForExit();
+                        // save image in tar file
+                        process1 = Process.Start("docker", $"save --output ./dist/{x.Name.ToLower()}.image.tar {x.Name.ToLower()}.image");
                         process1.WaitForExit();
 
                     }else{
@@ -1214,8 +1247,14 @@ namespace miccore.Utility{
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
-                        
+                        // publish image
                         process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}/{x.Name}.csproj -c Release");
+                        process1.WaitForExit();
+                        // build image
+                        process1 = Process.Start("docker", $"build ./{x.Name} -t {x.Name.ToLower()}.image -f ./{x.Name}/Dockerfile.{x.Name.Split('.')[0]}");
+                        process1.WaitForExit();
+                        // save image in tar file
+                        process1 = Process.Start("docker", $"save --output ./dist/{x.Name.ToLower()}.image.tar {x.Name.ToLower()}.image");
                         process1.WaitForExit();
 
                     }

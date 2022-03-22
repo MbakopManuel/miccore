@@ -49,10 +49,6 @@ namespace miccore
                         injection.SHFilesCreationAndInject("./package.json");
                         
                         bool ch = Chmod("./start.sh", "777");
-                        // if(_open){
-                        //     var process1 = Process.Start(Path.GetFullPath("start.sh"));
-                        //     process1.WaitForExit();
-                        // }
                     }else{
 
                         InjectionUtility injection = new InjectionUtility();
