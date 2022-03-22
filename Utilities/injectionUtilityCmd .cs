@@ -1454,6 +1454,9 @@ namespace miccore.Utility
                     throw new Exception(process.StandardError.ReadLine());
                 }
 
+                 Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" Saving docker compose ...\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
                 // copy docker compose file to dist
                 process = Process.Start("cp", $"docker-compose.yml ./dist/docker-compose.yml");
                 process.WaitForExit();
@@ -1461,6 +1464,10 @@ namespace miccore.Utility
                 {
                     throw new Exception(process.StandardError.ReadLine());
                 }
+
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" generate docker load sh file ...\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
                 // add from bash
                 bash += $"# load Migration Image \n";
                 bash += $"docker load --input migration.image.tar\n\n\n";
