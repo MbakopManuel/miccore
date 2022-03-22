@@ -46,14 +46,14 @@ namespace miccore
                         OutputToConsole($" \n******************************************************************************************** \n");
                         OutputToConsole($" {_project} project creation with authentication with name {_name} ...\n");
                         OutputToConsole($" \n******************************************************************************************** \n\n");
-                        runClone(_name, _source_with_auth);
+                        runClone(_name, _source_with_auth_net6);
 
                     }else{
 
                         OutputToConsole($" \n******************************************************************************************** \n");
                         OutputToConsole($" {_project} project without authentication with name {_name} ...\n");
                         OutputToConsole($" \n******************************************************************************************** \n\n");
-                        runClone(_name, _source_without_auth);
+                        runClone(_name, _source_without_auth_net6);
                     }    
 
                 }else{
@@ -70,14 +70,14 @@ namespace miccore
                                 OutputToConsole($" \n******************************************************************************************** \n");
                                 OutputToConsole($" {_project} project creation with authentication with name {_name} ...\n");
                                 OutputToConsole($" \n******************************************************************************************** \n\n");
-                                runClone(_name, _source_with_auth);
+                                runClone(_name, _source_with_auth_net6);
 
                             }else{
  
                                 OutputToConsole($" \n******************************************************************************************** \n");
                                 OutputToConsole($" {_project} project without authentication with name {_name} ...\n");
                                 OutputToConsole($" \n******************************************************************************************** \n\n");
-                                runClone(_name, _source_without_auth);
+                                runClone(_name, _source_without_auth_net6);
                             }     
 
                             RenameUtility rename = new RenameUtility();

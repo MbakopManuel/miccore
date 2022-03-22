@@ -3,7 +3,7 @@ Tool for dotnet core webapi microservice creation and management or for xamarin 
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
-Require .Net core 5.0
+Require .Net core 6.0
 
 Miccore .Net is a CLI which allows a user to create a webapi project with a very specific microservice architecture. it also allows you to create a xamarin project.
 
@@ -23,7 +23,7 @@ Miccore .Net is a CLI which allows a user to create a webapi project with a very
 
 Miccore .Net uses a number of open source projects to work properly:
 
-- [Dotnet Core 5.0](https://docs.microsoft.com/) - NET Core 5.0 Runtime enables you to run existing web/server applications. ...
+- [Dotnet Core 6.0](https://docs.microsoft.com/) - NET Core 5.0 Runtime enables you to run existing web/server applications. ...
 - [Ocelot](https://github.com/ThreeMammals/Ocelot) - Ocelot is a .NET API Gateway
 - [Xamarin](https://dotnet.microsoft.com/apps/xamarin) - Open-source mobile app platform for .NET
 - [Mysql](https://www.mysql.com/fr/) - MySQL Database Service est un service de base de données entièrement géré pour déployer des applications natives du cloud en utilisant la base de données​ ...

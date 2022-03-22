@@ -1,45 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <AssemblyName>miccore</AssemblyName>
-    <Version>2.0.3</Version>
-
-  </PropertyGroup>
-
-
-  <PropertyGroup>
-
-    <PackAsTool>true</PackAsTool>
-    <PackageId>Miccore.Net</PackageId>
-    <ToolCommandName>miccore</ToolCommandName>
-    <PackageOutputPath>./miccore-nupkg</PackageOutputPath>
-
-    <Authors>Manher</Authors>
-    <Description>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<AssemblyName>miccore</AssemblyName>
+		<Version>2.0.4</Version>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackAsTool>true</PackAsTool>
+		<PackageId>Miccore.Net</PackageId>
+		<ToolCommandName>miccore</ToolCommandName>
+		<PackageOutputPath>./miccore-nupkg</PackageOutputPath>
+		<Authors>Manher</Authors>
+		<Description>
         Tool for dotnet core webapi microservice architecture creation and management or for xamarin project creation.
 
-        this version is for NET CORE 5.0, check read me for all the features.
+        this version is for NET CORE 6.0, check read me for all the features.
     </Description>
-    <PackageTags>Microservice, dotnet core 5.0, .net core, xamarin, miccore.net, Miccore.Net, ocelot, mysql</PackageTags>
-    <RepositoryUrl>https://github.com/MbakopManuel/miccore/tree/main-v2</RepositoryUrl>
-
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ChilkatDnCore" Version="9.5.0.86" />
-    <PackageReference Include="Download.Client" Version="1.0.5" />
-    <PackageReference Include="FluentFTP" Version="33.1.6" />
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.1.0" />
-    <PackageReference Include="McMaster.Extensions.Hosting.CommandLine" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-    <PackageReference Include="YamlDotNet" Version="11.2.1" />
-  </ItemGroup>
-
+		<PackageTags>Microservice, dotnet core 6.0, .net core, xamarin, miccore.net, Miccore.Net, ocelot, mysql</PackageTags>
+		<RepositoryUrl>https://github.com/MbakopManuel/miccore/tree/main-v2</RepositoryUrl>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="ChilkatDnCore" Version="9.5.0.89"/>
+		<PackageReference Include="Download.Client" Version="1.0.5"/>
+		<PackageReference Include="FluentFTP" Version="36.1.0"/>
+		<PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.0"/>
+		<PackageReference Include="McMaster.Extensions.Hosting.CommandLine" Version="4.0.0"/>
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0"/>
+		<PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0"/>
+		<PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0"/>
+		<PackageReference Include="Serilog.Sinks.Console" Version="4.0.1"/>
+		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
+		<PackageReference Include="YamlDotNet" Version="11.2.1"/>
+	</ItemGroup>
 </Project>
