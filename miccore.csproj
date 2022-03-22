@@ -3,7 +3,7 @@
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
 		<AssemblyName>miccore</AssemblyName>
-		<Version>2.0.4</Version>
+		<Version>2.0.5</Version>
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackAsTool>true</PackAsTool>
@@ -12,6 +12,8 @@
 		<PackageOutputPath>./miccore-nupkg</PackageOutputPath>
 		<Authors>Manher</Authors>
 		<Description>
+        Note: this version add docker build files and redefine docker-compose elements 
+
         Tool for dotnet core webapi microservice architecture creation and management or for xamarin project creation.
 
         this version is for NET CORE 6.0, check read me for all the features.

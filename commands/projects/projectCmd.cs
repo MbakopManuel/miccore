@@ -85,14 +85,23 @@ namespace miccore.project
                     OutputToConsole($" \n******************************************************************************************** \n\n");
                     var process = Process.Start("dotnet", $"sln Microservice.WebApi.sln add ./{_name}/{_name}/{_name}.csproj");
                     process.WaitForExit();
+                    if(process.ExitCode != 0){
+                        throw new Exception(process.StandardError.ReadLine());
+                    }
                     process = Process.Start("dotnet", $"sln Microservice.WebApi.sln add ./{_name}/{name}.Test.Microservice/{name}.Test.Microservice.csproj");
                     process.WaitForExit();
+                    if(process.ExitCode != 0){
+                        throw new Exception(process.StandardError.ReadLine());
+                    }
 
                     OutputToConsole($" \n******************************************************************************************** \n");
                     OutputToConsole($"  build the solution ... \n");
                     OutputToConsole($" \n******************************************************************************************** \n\n");
                     process = Process.Start("dotnet", $"build");
                     process.WaitForExit();
+                    if(process.ExitCode != 0){
+                        throw new Exception(process.StandardError.ReadLine());
+                    }
 
                     OutputToConsole($" \n******************************************************************************************** \n");
                     OutputToConsole($"  package json injection ... \n");

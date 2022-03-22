@@ -17,9 +17,9 @@ namespace miccore
         
         protected readonly string _template_url = "https://github.com/miccore/templates.git";
         protected readonly string _source_with_auth = "template/micro-dotnet-with-auth-v2";
-        protected readonly string _source_with_auth_net6 = "template/micro-dotnet-with-auth-v2-net6";
+        protected readonly string _source_with_auth_net6 = "template/micro-dotnet-with-auth-v2-net6-next";
         protected readonly string _source_without_auth = "template/micro-dotnet-without-auth-v2";
-        protected readonly string _source_without_auth_net6 = "template/micro-dotnet-without-auth-v2-net6";
+        protected readonly string _source_without_auth_net6 = "template/micro-dotnet-without-auth-v2-net6-next";
         protected readonly string _source_user_microservice = "template/user.microservice-v2";
         protected readonly string _source_user_microservice_net6 = "template/user.microservice-v2-net6";
         protected readonly string _source_sample_microservice = "template/sample.microservice-v2";
@@ -75,6 +75,9 @@ namespace miccore
            
             var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
             process1.WaitForExit();
+            if(process1.ExitCode != 0){
+                throw new Exception(process1.StandardError.ReadLine());
+            }
             
             OutputToConsole($" \n******************************************************************************************** \n");
             OutputToConsole($" building of the solution\n");
@@ -83,6 +86,9 @@ namespace miccore
             Directory.SetCurrentDirectory($"./{name}/");
             process1 = Process.Start("dotnet", "build");
             process1.WaitForExit();
+            if(process1.ExitCode != 0){
+                throw new Exception(process1.StandardError.ReadLine());
+            }
 
 
             OutputToConsole($" \n******************************************************************************************** \n");
@@ -93,6 +99,9 @@ namespace miccore
 
             process1 = Process.Start("git", "init");
             process1.WaitForExit();
+            if(process1.ExitCode != 0){
+                throw new Exception(process1.StandardError.ReadLine());
+            }
             
             
         }
@@ -101,6 +110,9 @@ namespace miccore
            
             var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
             process1.WaitForExit();
+            if(process1.ExitCode != 0){
+                throw new Exception(process1.StandardError.ReadLine());
+            }
             
             OutputToConsole($" \n******************************************************************************************** \n");
             OutputToConsole($" building of the solution\n");
@@ -109,6 +121,9 @@ namespace miccore
             Directory.SetCurrentDirectory($"./{name}/");
             process1 = Process.Start("dotnet", "build");
             process1.WaitForExit();
+            if(process1.ExitCode != 0){
+                throw new Exception(process1.StandardError.ReadLine());
+            }
 
             deleteFolder("./.git/");
             
@@ -122,6 +137,9 @@ namespace miccore
            
             var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
             process1.WaitForExit();
+            if(process1.ExitCode != 0){
+                throw new Exception(process1.StandardError.ReadLine());
+            }
             
         }
 

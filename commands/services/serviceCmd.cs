@@ -111,6 +111,9 @@ namespace miccore.service
 
                 var process1 = Process.Start("dotnet", "build");
                 process1.WaitForExit();
+                if(process1.ExitCode != 0){
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
                 
                 return Task.FromResult(0);
             }

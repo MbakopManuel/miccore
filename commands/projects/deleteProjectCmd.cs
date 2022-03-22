@@ -43,6 +43,10 @@ namespace miccore.project
                     OutputToConsole($" \n******************************************************************************************** \n\n");
                     var process = Process.Start("dotnet", $"sln Microservice.WebApi.sln remove ./{_name}.Microservice/{_name}.Microservice.csproj");
                     process.WaitForExit();
+                    
+                    if(process.ExitCode != 0){
+                        throw new Exception(process.StandardError.ReadLine());
+                    }
 
                     OutputToConsole($" \n******************************************************************************************** \n");
                     OutputToConsole($"   delete microservice project name name {_name} ... \n");
@@ -54,6 +58,10 @@ namespace miccore.project
                     OutputToConsole($" \n******************************************************************************************** \n\n");
                     process = Process.Start("dotnet", $"build");
                     process.WaitForExit();
+                    
+                    if(process.ExitCode != 0){
+                        throw new Exception(process.StandardError.ReadLine());
+                    }
 
                 }else{
                     OutputError("microservice solution not found.\ngo to the general project");

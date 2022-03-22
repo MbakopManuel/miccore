@@ -8,7 +8,7 @@ namespace miccore.Models
         public List<string> depends_on {get; set;}
         public List<string> expose {get; set;}
         public List<string> ports {get; set;}
-        public Build build {get; set;}
+        public string image {get; set;}
         public Environment environment {get; set;}
         public Network networks {get; set;}
     }

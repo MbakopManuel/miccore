@@ -89,6 +89,9 @@ namespace miccore
                         
                         var process = Process.Start(exec, "database update");
                         process.WaitForExit();
+                        if(process.ExitCode != 0){
+                            throw new Exception(process.StandardError.ReadLine());
+                        }
                     });
 
                 }else{

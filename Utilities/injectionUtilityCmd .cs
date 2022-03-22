@@ -10,25 +10,29 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using YamlDotNet.Serialization;
 
-namespace miccore.Utility{
-    class InjectionUtility{
+namespace miccore.Utility
+{
+    class InjectionUtility
+    {
 
-        public InjectionUtility(){
+        public InjectionUtility()
+        {
 
         }
 
-        
+
         /**
         *
         *start service file importation, injection and profile adding
         *
         */
 
-        public void ServiceNameSpacesImportation(string filepath, string projectName, string serviceName){
+        public void ServiceNameSpacesImportation(string filepath, string projectName, string serviceName)
+        {
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "/* End Import */");
             var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
+            var post = text.Skip(i - 1);
 
             string[] add = new string[]{
                 $"\n",
@@ -39,7 +43,7 @@ namespace miccore.Utility{
                 $"\tusing {projectName}.Services.{serviceName}.MapperProfiles;",
                 $"\n",
             };
-            
+
             pre = pre.Concat(add);
             pre = pre.Concat(post);
 
@@ -51,11 +55,13 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed to import namespaces in file: {ex.Message}.");
             }
-            
+
         }
 
-         public void ServiceNameSpacesImportationForReference(string packageJson, string filepath, string projectName){
-            if(!File.Exists(packageJson)){
+        public void ServiceNameSpacesImportationForReference(string packageJson, string filepath, string projectName)
+        {
+            if (!File.Exists(packageJson))
+            {
                 Console.WriteLine("\n\nError: Package file not found\n\n");
                 return;
             }
@@ -66,9 +72,10 @@ namespace miccore.Utility{
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "/* End Import */");
             var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
+            var post = text.Skip(i - 1);
 
-            project.Services.ForEach(serviceName => {
+            project.Services.ForEach(serviceName =>
+            {
                 string[] add = new string[]{
                     $"\n",
                     $"\t//{projectName} namespaces importation",
@@ -76,13 +83,13 @@ namespace miccore.Utility{
                     $"\tusing {projectName}.Microservice.Services.{serviceName}.MapperProfiles;",
                     $"\n",
                 };
-                
+
                 pre = pre.Concat(add);
             });
 
 
             pre = pre.Concat(post);
-            
+
 
             try
             {
@@ -92,14 +99,15 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed to import namespaces in file: {ex.Message}.");
             }
-            
+
         }
 
-        public void ServiceRepositoryServicesInjection(string filepath, string serviceName){
+        public void ServiceRepositoryServicesInjection(string filepath, string serviceName)
+        {
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "            /** End Injection */");
             var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
+            var post = text.Skip(i - 1);
 
             string[] add = new string[]{
                 $"\n",
@@ -108,7 +116,7 @@ namespace miccore.Utility{
                 $"\t\t\t\t_services.TryAddTransient<I{serviceName}Service, {serviceName}Service>();",
                 $"\n",
             };
-            
+
             pre = pre.Concat(add);
             pre = pre.Concat(post);
 
@@ -120,14 +128,15 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed to inject the dependencies in file: {ex.Message}.");
             }
-            
+
         }
 
-        public void ServiceProfileAdding(string filepath, string serviceName){
+        public void ServiceProfileAdding(string filepath, string serviceName)
+        {
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "                /** End Adding Profiles */");
             var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
+            var post = text.Skip(i - 1);
 
             string[] add = new string[]{
                 $"\n",
@@ -138,7 +147,7 @@ namespace miccore.Utility{
                 $"\t\t\t\t\tnew Update{serviceName}RequestProfile(),",
                 $"\n",
             };
-            
+
             pre = pre.Concat(add);
             pre = pre.Concat(post);
 
@@ -150,12 +159,14 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed to inject the dependencies in file: {ex.Message}.");
             }
-            
+
         }
 
-        public void ServiceProfileAddingForReference(string packageJson, string filepath, string projectName){
+        public void ServiceProfileAddingForReference(string packageJson, string filepath, string projectName)
+        {
 
-            if(!File.Exists(packageJson)){
+            if (!File.Exists(packageJson))
+            {
                 Console.WriteLine("\n\nError: Package file not found\n\n");
                 return;
             }
@@ -169,9 +180,10 @@ namespace miccore.Utility{
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "                /** End Adding Profiles */");
             var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
+            var post = text.Skip(i - 1);
 
-            project.Services.ForEach(serviceName =>{
+            project.Services.ForEach(serviceName =>
+            {
                 string[] add = new string[]{
                     $"\n",
                     $"\t\t\t\t\t//{serviceName} adding profiles",
@@ -179,13 +191,13 @@ namespace miccore.Utility{
                     $"\t\t\t\t\tnew {serviceName}ResponseProfile(),",
                     $"\n",
                 };
-                
+
                 pre = pre.Concat(add);
             });
-            
+
             pre = pre.Concat(post);
-            
-           
+
+
 
             try
             {
@@ -195,7 +207,7 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed to inject the dependencies in file: {ex.Message}.");
             }
-            
+
         }
 
         /**
@@ -204,17 +216,18 @@ namespace miccore.Utility{
         *
         */
 
-         /**
-        *
-        *start DBContext file importation, injection
-        *
-        */
+        /**
+       *
+       *start DBContext file importation, injection
+       *
+       */
 
-        public void DBContextNameSpacesImportation(string filepath, string projectName, string serviceName){
+        public void DBContextNameSpacesImportation(string filepath, string projectName, string serviceName)
+        {
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "/* End Import */");
             var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
+            var post = text.Skip(i - 1);
 
             string[] add = new string[]{
                 $"\n",
@@ -222,7 +235,7 @@ namespace miccore.Utility{
                 $"\tusing {projectName}.Repositories.{serviceName}.DtoModels;",
                 $"\n",
             };
-            
+
             pre = pre.Concat(add);
             pre = pre.Concat(post);
 
@@ -234,13 +247,14 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed to import namespaces DBContext in file: {ex.Message}.");
             }
-            
+
         }
-        public void DBContextApplicationInjection(string filepath, string serviceName){
+        public void DBContextApplicationInjection(string filepath, string serviceName)
+        {
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "        /** End DBContext Adding */");
             var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
+            var post = text.Skip(i - 1);
 
             string[] add = new string[]{
                 $"\n",
@@ -248,7 +262,7 @@ namespace miccore.Utility{
                 $"\t\t\tDbSet<{serviceName}DtoModel> IApplicationDbContext.{serviceName}s {{ get; set; }}",
                 $"\n",
             };
-            
+
             pre = pre.Concat(add);
             pre = pre.Concat(post);
 
@@ -260,13 +274,14 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed to inject the DBContext dependencies in file: {ex.Message}.");
             }
-            
+
         }
-        public void DBContextIApplicationInjection(string filepath, string serviceName){
+        public void DBContextIApplicationInjection(string filepath, string serviceName)
+        {
             var text = File.ReadAllLines(filepath);
             int i = Array.IndexOf(text, "        /** End Interface DBContext Adding */");
             var pre = text.Take(i - 1);
-            var post = text.Skip(i-1);
+            var post = text.Skip(i - 1);
 
             string[] add = new string[]{
                 $"\n",
@@ -274,7 +289,7 @@ namespace miccore.Utility{
                 $"\t\t\tDbSet<{serviceName}DtoModel> {serviceName}s {{ get; set; }}",
                 $"\n",
             };
-            
+
             pre = pre.Concat(add);
             pre = pre.Concat(post);
 
@@ -286,54 +301,58 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed to inject the DBContext in file: {ex.Message}.");
             }
-            
+
         }
 
-      /**
-        *
-        *end DBContext file importation, injection
-        *
-        */
+        /**
+          *
+          *end DBContext file importation, injection
+          *
+          */
 
-         /**
-        *
-        * start package json project injection
-        *
-        */
+        /**
+       *
+       * start package json project injection
+       *
+       */
 
-        public void PackageJsonProjectInject(string filepath, string projectName, bool auth){
+        public void PackageJsonProjectInject(string filepath, string projectName, bool auth)
+        {
 
-            if(!File.Exists(filepath)){
+            if (!File.Exists(filepath))
+            {
                 Console.WriteLine("\n\nError: Package file not found\n\n");
                 return;
             }
 
             var text = File.ReadAllText(filepath);
             Package package = JsonConvert.DeserializeObject<Package>(text);
-            
+
             int lastport = int.Parse(package.Projects.First().Port);
             int i = 0;
             foreach (var item in package.Projects)
             {
-                if(lastport < int.Parse(item.Port)){
+                if (lastport < int.Parse(item.Port))
+                {
                     lastport = int.Parse(item.Port);
                     i++;
                 }
             }
             int lasturl = Int32.Parse(package.Projects.ElementAt(i).DockerUrl.Split('.')[3]);
-           
+
             Project project = new Project();
             project.Name = projectName;
             project.Port = (lastport + 1).ToString();
-            project.DockerUrl =     package.Projects.Last().DockerUrl.Split('.')[0]+'.'+
-                                    package.Projects.Last().DockerUrl.Split('.')[1]+'.'+
-                                    package.Projects.Last().DockerUrl.Split('.')[2]+'.'+
-                                    (lasturl+1).ToString();
-            project.references = new List<string>(){};
-            project.Services = new List<string>(){};
+            project.DockerUrl = package.Projects.Last().DockerUrl.Split('.')[0] + '.' +
+                                    package.Projects.Last().DockerUrl.Split('.')[1] + '.' +
+                                    package.Projects.Last().DockerUrl.Split('.')[2] + '.' +
+                                    (lasturl + 1).ToString();
+            project.references = new List<string>() { };
+            project.Services = new List<string>() { };
             project.Services.Add(projectName.Split('.')[0]);
 
-            if(auth){
+            if (auth)
+            {
                 RenameUtility rename = new RenameUtility();
                 rename.Rename($".", "44373", project.Port);
                 project.Services.Add("Role");
@@ -347,22 +366,27 @@ namespace miccore.Utility{
             content += $"\t\"version\": \"{package.Version}\",\n";
             content += $"\t\"projects\": [\n";
 
-            package.Projects.ForEach(x => {
+            package.Projects.ForEach(x =>
+            {
 
 
                 string refer = "[";
-                x.references.ForEach(y => {
+                x.references.ForEach(y =>
+                {
                     refer += $"\"{y.ToString()}\"";
-                    if(x.references.Last() != y){
+                    if (x.references.Last() != y)
+                    {
                         refer += ",";
                     }
                 });
                 refer += "]";
 
                 string serv = "[";
-                x.Services.ForEach(y => {
+                x.Services.ForEach(y =>
+                {
                     serv += $"\"{y}\"";
-                    if(x.Services.Last() != y){
+                    if (x.Services.Last() != y)
+                    {
                         serv += ",";
                     }
                 });
@@ -376,12 +400,13 @@ namespace miccore.Utility{
                 content += $"\t\t\t\"services\": {serv}\n";
                 content += "\t\t}";
 
-                if(!package.Projects.Last().Equals(x)){
+                if (!package.Projects.Last().Equals(x))
+                {
                     content += ", \n";
                 }
             });
-            content += $"\n\t]\n";            
-            content += "}";            
+            content += $"\n\t]\n";
+            content += "}";
 
             try
             {
@@ -391,32 +416,34 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed package json project injection in file: {ex.Message}.");
             }
-            
+
         }
 
-  /**
-        *
-        * start package json reference injection
-        *
-        */
+        /**
+              *
+              * start package json reference injection
+              *
+              */
 
-        public void PackageJsonReferenceInject(string filepath, string projectName, string inject){
+        public void PackageJsonReferenceInject(string filepath, string projectName, string inject)
+        {
 
-            if(!File.Exists(filepath)){
+            if (!File.Exists(filepath))
+            {
                 Console.WriteLine("\n\nError: Package file not found\n\n");
                 return;
             }
 
             var text = File.ReadAllText(filepath);
             Package package = JsonConvert.DeserializeObject<Package>(text);
-            
-            
+
+
             Project project = new Project();
             project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
             package.Projects.Remove(project);
             project.references.Add(inject.ToLower());
             package.Projects.Add(project);
-            
+
 
             string content = "{\n";
 
@@ -424,22 +451,27 @@ namespace miccore.Utility{
             content += $"\t\"version\": \"{package.Version}\",\n";
             content += $"\t\"projects\": [\n";
 
-            package.Projects.ForEach(x => {
+            package.Projects.ForEach(x =>
+            {
 
 
                 string refer = "[";
-                x.references.ForEach(y => {
+                x.references.ForEach(y =>
+                {
                     refer += $"\"{y.ToLower()}\"";
-                    if(x.references.Last() != y){
+                    if (x.references.Last() != y)
+                    {
                         refer += ",";
                     }
                 });
                 refer += "]";
 
                 string serv = "[";
-                x.Services.ForEach(y => {
+                x.Services.ForEach(y =>
+                {
                     serv += $"\"{y}\"";
-                    if(x.Services.Last() != y){
+                    if (x.Services.Last() != y)
+                    {
                         serv += ",";
                     }
                 });
@@ -453,12 +485,13 @@ namespace miccore.Utility{
                 content += $"\t\t\t\"services\": {serv}\n";
                 content += "\t\t}";
 
-                if(!package.Projects.Last().Equals(x)){
+                if (!package.Projects.Last().Equals(x))
+                {
                     content += ", \n";
                 }
             });
-            content += $"\n\t]\n";            
-            content += "}";            
+            content += $"\n\t]\n";
+            content += "}";
 
             try
             {
@@ -468,27 +501,29 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed package json project injection in file: {ex.Message}.");
             }
-            
+
         }
 
 
-        public void PackageJsonReferenceServiceInject(string filepath, string projectName, string inject){
+        public void PackageJsonReferenceServiceInject(string filepath, string projectName, string inject)
+        {
 
-            if(!File.Exists(filepath)){
+            if (!File.Exists(filepath))
+            {
                 Console.WriteLine("\n\nError: Package file not found\n\n");
                 return;
             }
 
             var text = File.ReadAllText(filepath);
             Package package = JsonConvert.DeserializeObject<Package>(text);
-            
-            
+
+
             Project project = new Project();
             project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
             package.Projects.Remove(project);
             project.Services.Add(inject);
             package.Projects.Add(project);
-            
+
 
             string content = "{\n";
 
@@ -496,13 +531,16 @@ namespace miccore.Utility{
             content += $"\t\"version\": \"{package.Version}\",\n";
             content += $"\t\"projects\": [\n";
 
-            package.Projects.ForEach(x => {
+            package.Projects.ForEach(x =>
+            {
 
 
                 string refer = "[";
-                x.references.ForEach(y => {
+                x.references.ForEach(y =>
+                {
                     refer += $"\"{y.ToLower()}\"";
-                    if(x.references.Last() != y){
+                    if (x.references.Last() != y)
+                    {
                         refer += ",";
                     }
                 });
@@ -510,9 +548,11 @@ namespace miccore.Utility{
                 refer += "]";
 
                 string serv = "[";
-                x.Services.ForEach(y => {
+                x.Services.ForEach(y =>
+                {
                     serv += $"\"{y}\"";
-                    if(x.Services.Last() != y){
+                    if (x.Services.Last() != y)
+                    {
                         serv += ",";
                     }
                 });
@@ -526,12 +566,13 @@ namespace miccore.Utility{
                 content += $"\t\t\t\"services\": {serv}\n";
                 content += "\t\t}";
 
-                if(!package.Projects.Last().Equals(x)){
+                if (!package.Projects.Last().Equals(x))
+                {
                     content += ", \n";
                 }
             });
-            content += $"\n\t]\n";            
-            content += "}";            
+            content += $"\n\t]\n";
+            content += "}";
 
             try
             {
@@ -541,31 +582,34 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed package json project injection in file: {ex.Message}.");
             }
-            
+
         }
 
-         /**
-        *
-        * start ocelot project injection
-        *
-        */
+        /**
+       *
+       * start ocelot project injection
+       *
+       */
 
 
-        public void OcelotProjectInjection(string filepath, string projectName){
+        public void OcelotProjectInjection(string filepath, string projectName)
+        {
 
-            if(!File.Exists(filepath)){
+            if (!File.Exists(filepath))
+            {
                 Console.WriteLine("\n\nError: Ocelot file not found\n\n");
                 return;
             }
 
             var text = File.ReadAllText("./package.json");
             Package package = JsonConvert.DeserializeObject<Package>(text);
-            
+
             int lastport = int.Parse(package.Projects.First().Port);
             int i = 0;
             foreach (var item in package.Projects)
             {
-                if(lastport < int.Parse(item.Port)){
+                if (lastport < int.Parse(item.Port))
+                {
                     lastport = int.Parse(item.Port);
                     i++;
                 }
@@ -580,19 +624,19 @@ namespace miccore.Utility{
             down.Port = lastport;
 
             OcelotObject obj = new OcelotObject();
-            obj.DownstreamHostAndPorts = new List<DownstreamHostAndPort>(){down};
+            obj.DownstreamHostAndPorts = new List<DownstreamHostAndPort>() { down };
             obj.DownstreamPathTemplate = $"/{projectName.ToLower()}";
             obj.DownstreamScheme = "http";
             obj.UpstreamPathTemplate = $"/api/{projectName.ToLower()}";
-            obj.UpstreamHttpMethod = new List<string>(){"POST", "GET", "OPTIONS"};
+            obj.UpstreamHttpMethod = new List<string>() { "POST", "GET", "OPTIONS" };
             obj.SwaggerKey = $"{projectName}s";
 
             OcelotObject objId = new OcelotObject();
-            objId.DownstreamHostAndPorts = new List<DownstreamHostAndPort>(){down};
+            objId.DownstreamHostAndPorts = new List<DownstreamHostAndPort>() { down };
             objId.DownstreamPathTemplate = $"/{projectName.ToLower()}/{{id}}";
             objId.DownstreamScheme = "http";
             objId.UpstreamPathTemplate = $"/api/{projectName.ToLower()}/{{id}}";
-            objId.UpstreamHttpMethod = new List<string>(){"GET", "PUT", "DELETE", "OPTIONS"};
+            objId.UpstreamHttpMethod = new List<string>() { "GET", "PUT", "DELETE", "OPTIONS" };
             objId.SwaggerKey = $"{projectName}s";
 
             ConfigVersion conf = new ConfigVersion();
@@ -601,7 +645,7 @@ namespace miccore.Utility{
             conf.Url = $"http://localhost:{lastport}/swagger/v1/swagger.json";
 
             SwaggerEndPointObject end = new SwaggerEndPointObject();
-            end.Config = new List<ConfigVersion>(){conf};
+            end.Config = new List<ConfigVersion>() { conf };
             end.Key = $"{projectName}s";
 
             ocelot.Routes.Add(obj);
@@ -612,26 +656,30 @@ namespace miccore.Utility{
             string content = "{\n";
 
             content += $"\t\"Routes\": [\n";
-            ocelot.Routes.ForEach(x => {
+            ocelot.Routes.ForEach(x =>
+            {
                 content += "\t\t{ \n";
                 content += $"\t\t\t\"DownstreamPathTemplate\": \"{x.DownstreamPathTemplate}\",\n";
                 content += $"\t\t\t\"DownstreamScheme\": \"{x.DownstreamScheme}\",\n";
                 content += $"\t\t\t\"DownstreamHostAndPorts\": [\n";
-                
-                x.DownstreamHostAndPorts.ForEach(y => {
+
+                x.DownstreamHostAndPorts.ForEach(y =>
+                {
                     content += $"\t\t\t\t{{\n";
                     content += $"\t\t\t\t\t\"Host\":\"{y.Host}\",\n";
                     content += $"\t\t\t\t\t\"Port\": {y.Port}\n";
                     content += $"\t\t\t\t}}\n";
                 });
-                
+
                 content += $"\t\t\t],\n";
                 content += $"\t\t\t\"UpstreamPathTemplate\": \"{x.UpstreamPathTemplate}\",\n";
                 content += $"\t\t\t\"UpstreamHttpMethod\":[ ";
 
-                x.UpstreamHttpMethod.ForEach(u => {
+                x.UpstreamHttpMethod.ForEach(u =>
+                {
                     content += $"\"{u}\"";
-                    if(!x.UpstreamHttpMethod.Last().Equals(u)){
+                    if (!x.UpstreamHttpMethod.Last().Equals(u))
+                    {
                         content += $", ";
                     }
                 });
@@ -640,35 +688,39 @@ namespace miccore.Utility{
                 content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\"\n";
                 content += "\t\t}";
 
-                if(!ocelot.Routes.Last().Equals(x)){
+                if (!ocelot.Routes.Last().Equals(x))
+                {
                     content += ", \n";
                 }
             });
-            content += $"\n\t],\n";    
-            
-            content += $"\t\"SwaggerEndPoints\": [\n"; 
-            ocelot.SwaggerEndPoints.ForEach(x => {
+            content += $"\n\t],\n";
+
+            content += $"\t\"SwaggerEndPoints\": [\n";
+            ocelot.SwaggerEndPoints.ForEach(x =>
+            {
                 content += "\t\t{ \n";
                 content += $"\t\t\t\"Key\": \"{x.Key}\",\n";
                 content += $"\t\t\t\"Config\": [\n";
-                
-                x.Config.ForEach(y => {
+
+                x.Config.ForEach(y =>
+                {
                     content += $"\t\t\t\t{{\n";
                     content += $"\t\t\t\t\t\"Name\":\"{y.Name}\",\n";
                     content += $"\t\t\t\t\t\"Version\": \"{y.Version}\",\n";
                     content += $"\t\t\t\t\t\"Url\": \"{y.Url}\"\n";
                     content += $"\t\t\t\t}}\n";
                 });
-                
+
                 content += $"\t\t\t]\n";
-               content += "\t\t}";
-                if(!ocelot.SwaggerEndPoints.Last().Equals(x)){
+                content += "\t\t}";
+                if (!ocelot.SwaggerEndPoints.Last().Equals(x))
+                {
                     content += ", \n";
                 }
             });
-            content += $"\n\t]\n";   
+            content += $"\n\t]\n";
 
-            content += "}";            
+            content += "}";
 
             try
             {
@@ -678,30 +730,33 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed ocelot project injection in file: {ex.Message}.");
             }
-            
+
         }
 
-    public void DockerProjectInjection(string filepath, string projectName){
+        public void DockerProjectInjection(string filepath, string projectName)
+        {
 
-            if(!File.Exists(filepath)){
+            if (!File.Exists(filepath))
+            {
                 Console.WriteLine("\n\nError: docker compose file not found\n\n");
                 return;
             }
 
             var text = File.ReadAllText("./package.json");
             Package package = JsonConvert.DeserializeObject<Package>(text);
-            
+
             int lastport = int.Parse(package.Projects.First().Port);
             int i = 0;
             foreach (var item in package.Projects)
             {
-                if(lastport < int.Parse(item.Port)){
+                if (lastport < int.Parse(item.Port))
+                {
                     lastport = int.Parse(item.Port);
                     i++;
                 }
             }
             string lasturl = package.Projects.ElementAt(i).DockerUrl;
-            
+
             var deserialise = new YamlDotNet.Serialization.Deserializer();
 
             try
@@ -710,28 +765,28 @@ namespace miccore.Utility{
                 {
                     var obj = deserialise.Deserialize<Dictionary<object, object>>(reader);
                     var services = (Dictionary<object, object>)obj["services"];
-                   
+
                     var gateway = services["gateway"];
-                     
+
                     string json = JsonConvert.SerializeObject(gateway, Formatting.Indented);
-                    
+
                     ServiceItem dict = new ServiceItem();
                     dict = JsonConvert.DeserializeObject<ServiceItem>(json);
 
                     dict.container_name = projectName.ToLower();
                     dict.ports.RemoveAt(0);
-                    dict.ports.Add(lastport+":"+80);
-                    dict.build.context = "./"+projectName+".Microservice";
-                    dict.build.dockerfile = "Dockerfile."+projectName;
+                    dict.ports.Add(lastport + ":" + 80);
+                    dict.image =  (projectName + ".Microservice").ToLower()+".image:latest";
                     dict.networks.static_network.ipv4_address = lasturl;
-                    
+
                     var project = new Project();
                     project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
-                    project.references.ForEach(y => {
+                    project.references.ForEach(y =>
+                    {
                         dict.depends_on.Add(y);
                     });
 
-                    services[projectName.ToLower()] = dict; 
+                    services[projectName.ToLower()] = dict;
                     obj["services"] = services;
                     var serializer = new SerializerBuilder().Build();
                     var yaml = serializer.Serialize(obj);
@@ -743,31 +798,34 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed docker project injection in file: {ex.Message}.");
             }
-            
-    }
+
+        }
 
 
-    public void DockerReferenceInjection(string filepath, string projectName){
+        public void DockerReferenceInjection(string filepath, string projectName)
+        {
 
-            if(!File.Exists(filepath)){
+            if (!File.Exists(filepath))
+            {
                 Console.WriteLine("\n\nError: docker compose file not found\n\n");
                 return;
             }
 
             var text = File.ReadAllText("./package.json");
             Package package = JsonConvert.DeserializeObject<Package>(text);
-            
+
             int lastport = int.Parse(package.Projects.First().Port);
             int i = 0;
             foreach (var item in package.Projects)
             {
-                if(lastport < int.Parse(item.Port)){
+                if (lastport < int.Parse(item.Port))
+                {
                     lastport = int.Parse(item.Port);
                     i++;
                 }
             }
             string lasturl = package.Projects.ElementAt(i).DockerUrl;
-            
+
             var deserialise = new YamlDotNet.Serialization.Deserializer();
 
             try
@@ -776,22 +834,23 @@ namespace miccore.Utility{
                 {
                     var obj = deserialise.Deserialize<Dictionary<object, object>>(reader);
                     var services = (Dictionary<object, object>)obj["services"];
-                   
+
                     var gateway = services[projectName.ToLower()];
-                     
+
                     string json = JsonConvert.SerializeObject(gateway, Formatting.Indented);
-                    
+
                     ServiceItem dict = new ServiceItem();
                     dict = JsonConvert.DeserializeObject<ServiceItem>(json);
 
-                   
+
                     var project = new Project();
                     project = package.Projects.Where(x => x.Name == $"{projectName}.Microservice").FirstOrDefault();
-                    project.references.ForEach(y => {
+                    project.references.ForEach(y =>
+                    {
                         dict.depends_on.Add(y);
                     });
 
-                    services[projectName.ToLower()] = dict; 
+                    services[projectName.ToLower()] = dict;
                     obj["services"] = services;
                     var serializer = new SerializerBuilder().Build();
                     var yaml = serializer.Serialize(obj);
@@ -803,31 +862,33 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed docker project injection in file: {ex.Message}.");
             }
-            
-    }
+
+        }
 
 
-      /**
-        *
-        *end  ocelot project injection
-        *
-        */
+        /**
+          *
+          *end  ocelot project injection
+          *
+          */
 
-         /**
-        *
-        * start ocelot project delete
-        *
-        */
+        /**
+       *
+       * start ocelot project delete
+       *
+       */
 
 
-        public void ProjectDeletion(string filepath, string projectName){
+        public void ProjectDeletion(string filepath, string projectName)
+        {
 
-            if(!File.Exists(filepath)){
+            if (!File.Exists(filepath))
+            {
                 Console.WriteLine("\n\nError: Ocelot file not found\n\n");
                 return;
             }
 
-           
+
             try
             {
                 //delete project in package json
@@ -840,18 +901,20 @@ namespace miccore.Utility{
                 content += $"\t\"version\": \"{package.Version}\",\n";
                 content += $"\t\"projects\": [\n";
 
-                package.Projects.ForEach(x => {
+                package.Projects.ForEach(x =>
+                {
                     content += "\t\t{ \n";
                     content += $"\t\t\t\"name\": \"{x.Name}\",\n";
                     content += $"\t\t\t\"port\": \"{x.Port}\"\n";
                     content += "\t\t}";
 
-                    if(!package.Projects.Last().Equals(x)){
+                    if (!package.Projects.Last().Equals(x))
+                    {
                         content += ", \n";
                     }
                 });
-                content += $"\n\t]\n";            
-                content += "}"; 
+                content += $"\n\t]\n";
+                content += "}";
                 File.WriteAllText("./package.json", content);
 
                 //delete project in ocelot
@@ -863,62 +926,70 @@ namespace miccore.Utility{
                 content = "{\n";
 
                 content += $"\t\"Routes\": [\n";
-                ocelot.Routes.ForEach(x => {
-                content += "\t\t{ \n";
-                content += $"\t\t\t\"DownstreamPathTemplate\": \"{x.DownstreamPathTemplate}\",\n";
-                content += $"\t\t\t\"DownstreamScheme\": \"{x.DownstreamScheme}\",\n";
-                content += $"\t\t\t\"DownstreamHostAndPorts\": [\n";
-                
-                x.DownstreamHostAndPorts.ForEach(y => {
-                    content += $"\t\t\t\t{{\n";
-                    content += $"\t\t\t\t\t\"Host\":\"{y.Host}\",\n";
-                    content += $"\t\t\t\t\t\"Port\": {y.Port}\n";
-                    content += $"\t\t\t\t}}\n";
-                });
-                
-                content += $"\t\t\t],\n";
-                content += $"\t\t\t\"UpstreamPathTemplate\": \"{x.UpstreamPathTemplate}\",\n";
-                content += $"\t\t\t\"UpstreamHttpMethod\":[ ";
+                ocelot.Routes.ForEach(x =>
+                {
+                    content += "\t\t{ \n";
+                    content += $"\t\t\t\"DownstreamPathTemplate\": \"{x.DownstreamPathTemplate}\",\n";
+                    content += $"\t\t\t\"DownstreamScheme\": \"{x.DownstreamScheme}\",\n";
+                    content += $"\t\t\t\"DownstreamHostAndPorts\": [\n";
 
-                x.UpstreamHttpMethod.ForEach(u => {
-                    content += $"\"{u}\"";
-                    if(!x.UpstreamHttpMethod.Last().Equals(u)){
-                        content += $", ";
+                    x.DownstreamHostAndPorts.ForEach(y =>
+                    {
+                        content += $"\t\t\t\t{{\n";
+                        content += $"\t\t\t\t\t\"Host\":\"{y.Host}\",\n";
+                        content += $"\t\t\t\t\t\"Port\": {y.Port}\n";
+                        content += $"\t\t\t\t}}\n";
+                    });
+
+                    content += $"\t\t\t],\n";
+                    content += $"\t\t\t\"UpstreamPathTemplate\": \"{x.UpstreamPathTemplate}\",\n";
+                    content += $"\t\t\t\"UpstreamHttpMethod\":[ ";
+
+                    x.UpstreamHttpMethod.ForEach(u =>
+                    {
+                        content += $"\"{u}\"";
+                        if (!x.UpstreamHttpMethod.Last().Equals(u))
+                        {
+                            content += $", ";
+                        }
+                    });
+                    content += $" ],\n";
+
+                    content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\"\n";
+                    content += "\t\t}";
+
+                    if (!ocelot.Routes.Last().Equals(x))
+                    {
+                        content += ", \n";
                     }
                 });
-                content += $" ],\n";
+                content += $"\n\t],\n";
 
-                content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\"\n";
-                content += "\t\t}";
-
-                if(!ocelot.Routes.Last().Equals(x)){
-                    content += ", \n";
-                }
-                });
-                content += $"\n\t],\n";    
-                
-                content += $"\t\"SwaggerEndPoints\": [\n"; 
-                ocelot.SwaggerEndPoints.ForEach(x => {
+                content += $"\t\"SwaggerEndPoints\": [\n";
+                ocelot.SwaggerEndPoints.ForEach(x =>
+                {
                     content += "\t\t{ \n";
                     content += $"\t\t\t\"Key\": \"{x.Key}\",\n";
                     content += $"\t\t\t\"Config\": [\n";
-                    
-                    x.Config.ForEach(y => {
+
+                    x.Config.ForEach(y =>
+                    {
                         content += $"\t\t\t\t{{\n";
                         content += $"\t\t\t\t\t\"Name\":\"{y.Name}\",\n";
                         content += $"\t\t\t\t\t\"Version\": \"{y.Version}\",\n";
                         content += $"\t\t\t\t\t\"Url\": \"{y.Url}\"\n";
                         content += $"\t\t\t\t}}\n";
                     });
-                    
+
                     content += $"\t\t\t]\n";
                     content += "\t\t}";
-                    if(!ocelot.SwaggerEndPoints.Last().Equals(x)){
+                    if (!ocelot.SwaggerEndPoints.Last().Equals(x))
+                    {
                         content += ", \n";
                     }
 
                 });
-                content += $"\n\t]\n";   
+                content += $"\n\t]\n";
 
                 content += "}";
                 File.WriteAllText(filepath, content);
@@ -927,38 +998,41 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed ocelot project injection in file: {ex.Message}.");
             }
-            
+
         }
 
-      /**
-        *
-        *end  ocelot project delete
-        *
-        */
+        /**
+          *
+          *end  ocelot project delete
+          *
+          */
 
 
-         /**
-        *
-        * start ocelot project service injection
-        *
-        */
+        /**
+       *
+       * start ocelot project service injection
+       *
+       */
 
 
-          public void OcelotProjectServiceInjection(string packageFile, string filepath, string projectName, string serviceName){
+        public void OcelotProjectServiceInjection(string packageFile, string filepath, string projectName, string serviceName)
+        {
 
-            if(!File.Exists(packageFile)){
+            if (!File.Exists(packageFile))
+            {
                 Console.WriteLine("\n\nError: package file not found\n\n");
                 return;
             }
 
-            if(!File.Exists(filepath)){
+            if (!File.Exists(filepath))
+            {
                 Console.WriteLine("\n\nError: Ocelot file not found\n\n");
                 return;
             }
 
             var text = File.ReadAllText(packageFile);
             Package package = JsonConvert.DeserializeObject<Package>(text);
-            
+
             int lastport = Int32.Parse(
                                     package.Projects
                                             .Where(x => x.Name == $"{projectName}.Microservice")
@@ -974,19 +1048,19 @@ namespace miccore.Utility{
             down.Port = lastport;
 
             OcelotObject obj = new OcelotObject();
-            obj.DownstreamHostAndPorts = new List<DownstreamHostAndPort>(){down};
+            obj.DownstreamHostAndPorts = new List<DownstreamHostAndPort>() { down };
             obj.DownstreamPathTemplate = $"/{serviceName.ToLower()}";
             obj.DownstreamScheme = "http";
             obj.UpstreamPathTemplate = $"/api/{projectName.ToLower()}/{serviceName.ToLower()}";
-            obj.UpstreamHttpMethod = new List<string>(){"POST", "GET", "OPTIONS"};
+            obj.UpstreamHttpMethod = new List<string>() { "POST", "GET", "OPTIONS" };
             obj.SwaggerKey = $"{projectName}s";
 
             OcelotObject objId = new OcelotObject();
-            objId.DownstreamHostAndPorts = new List<DownstreamHostAndPort>(){down};
+            objId.DownstreamHostAndPorts = new List<DownstreamHostAndPort>() { down };
             objId.DownstreamPathTemplate = $"/{serviceName.ToLower()}/{{id}}";
             objId.DownstreamScheme = "http";
             objId.UpstreamPathTemplate = $"/api/{projectName.ToLower()}/{serviceName.ToLower()}/{{id}}";
-            objId.UpstreamHttpMethod = new List<string>(){"GET", "PUT", "DELETE", "OPTIONS"};
+            objId.UpstreamHttpMethod = new List<string>() { "GET", "PUT", "DELETE", "OPTIONS" };
             objId.SwaggerKey = $"{projectName}s";
 
             ocelot.Routes.Add(obj);
@@ -995,26 +1069,30 @@ namespace miccore.Utility{
             string content = "{\n";
 
             content += $"\t\"Routes\": [\n";
-            ocelot.Routes.ForEach(x => {
+            ocelot.Routes.ForEach(x =>
+            {
                 content += "\t\t{ \n";
                 content += $"\t\t\t\"DownstreamPathTemplate\": \"{x.DownstreamPathTemplate}\",\n";
                 content += $"\t\t\t\"DownstreamScheme\": \"{x.DownstreamScheme}\",\n";
                 content += $"\t\t\t\"DownstreamHostAndPorts\": [\n";
-                
-                x.DownstreamHostAndPorts.ForEach(y => {
+
+                x.DownstreamHostAndPorts.ForEach(y =>
+                {
                     content += $"\t\t\t\t{{\n";
                     content += $"\t\t\t\t\t\"Host\":\"{y.Host}\",\n";
                     content += $"\t\t\t\t\t\"Port\": {y.Port}\n";
                     content += $"\t\t\t\t}}\n";
                 });
-                
+
                 content += $"\t\t\t],\n";
                 content += $"\t\t\t\"UpstreamPathTemplate\": \"{x.UpstreamPathTemplate}\",\n";
                 content += $"\t\t\t\"UpstreamHttpMethod\":[ ";
 
-                x.UpstreamHttpMethod.ForEach(u => {
+                x.UpstreamHttpMethod.ForEach(u =>
+                {
                     content += $"\"{u}\"";
-                    if(!x.UpstreamHttpMethod.Last().Equals(u)){
+                    if (!x.UpstreamHttpMethod.Last().Equals(u))
+                    {
                         content += $", ";
                     }
                 });
@@ -1023,35 +1101,39 @@ namespace miccore.Utility{
                 content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\"\n";
                 content += "\t\t}";
 
-                if(!ocelot.Routes.Last().Equals(x)){
+                if (!ocelot.Routes.Last().Equals(x))
+                {
                     content += ", \n";
                 }
             });
-            content += $"\n\t],\n";    
-            
-            content += $"\t\"SwaggerEndPoints\": [\n"; 
-            ocelot.SwaggerEndPoints.ForEach(x => {
+            content += $"\n\t],\n";
+
+            content += $"\t\"SwaggerEndPoints\": [\n";
+            ocelot.SwaggerEndPoints.ForEach(x =>
+            {
                 content += "\t\t{ \n";
                 content += $"\t\t\t\"Key\": \"{x.Key}\",\n";
                 content += $"\t\t\t\"Config\": [\n";
-                
-                x.Config.ForEach(y => {
+
+                x.Config.ForEach(y =>
+                {
                     content += $"\t\t\t\t{{\n";
                     content += $"\t\t\t\t\t\"Name\":\"{y.Name}\",\n";
                     content += $"\t\t\t\t\t\"Version\": \"{y.Version}\",\n";
                     content += $"\t\t\t\t\t\"Url\": \"{y.Url}\"\n";
                     content += $"\t\t\t\t}}\n";
                 });
-                
+
                 content += $"\t\t\t]\n";
-               content += "\t\t}";
-                if(!ocelot.SwaggerEndPoints.Last().Equals(x)){
+                content += "\t\t}";
+                if (!ocelot.SwaggerEndPoints.Last().Equals(x))
+                {
                     content += ", \n";
                 }
             });
-            content += $"\n\t]\n";   
+            content += $"\n\t]\n";
 
-            content += "}";            
+            content += "}";
 
             try
             {
@@ -1061,24 +1143,26 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed ocelot project service injection in file: {ex.Message}.");
             }
-            
+
         }
 
-      /**
-        *
-        *end  ocelot project service injection
-        *
-        */
+        /**
+          *
+          *end  ocelot project service injection
+          *
+          */
 
-         /**
-        *
-        * start sh file builder
-        *
-        */
+        /**
+       *
+       * start sh file builder
+       *
+       */
 
-        public void SHFilesCreationAndInject(string packageFile){
-            
-            try{
+        public void SHFilesCreationAndInject(string packageFile)
+        {
+
+            try
+            {
                 var text = File.ReadAllText(packageFile);
                 Package package = JsonConvert.DeserializeObject<Package>(text);
 
@@ -1087,9 +1171,14 @@ namespace miccore.Utility{
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 var process1 = Process.Start("dotnet", "build");
                 process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
-                if(Directory.Exists("./dist")){
-                     var directory = new DirectoryInfo("./dist") { Attributes = FileAttributes.Normal };
+                if (Directory.Exists("./dist"))
+                {
+                    var directory = new DirectoryInfo("./dist") { Attributes = FileAttributes.Normal };
 
                     foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
                     {
@@ -1101,51 +1190,72 @@ namespace miccore.Utility{
 
                 Directory.CreateDirectory("./dist");
                 Directory.SetCurrentDirectory("./dist");
-                if(!Directory.Exists("./wwwroot")){
+                if (!Directory.Exists("./wwwroot"))
+                {
                     Directory.CreateDirectory("wwwroot");
                 }
                 string startText = "";
-                package.Projects.ForEach(x => {
-                    if(x.Name == "Gateway.WebApi"){
+                package.Projects.ForEach(x =>
+                {
+                    if (x.Name == "Gateway.WebApi")
+                    {
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         Console.WriteLine($" building of {x.Name}\n");
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
-                        
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
 
                         var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
                         string content = "";
 
                         content = $"cp ./{x.Name}/ocelot.json .;dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
-                        
 
-                        File.WriteAllText(file, content);
-                        startText += $"pm2 delete {package.Name}-{x.Name};";
-                        startText += $"pm2 start {file} --name {package.Name}-{x.Name};";
-                    }else{
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        Console.WriteLine($" building of {x.Name}\n");
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}/{x.Name}.csproj");
-                        process1.WaitForExit();
-                        
-                        process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
-                        process1.WaitForExit();
-
-                        var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
-                        string content = "";
-
-                        content = $"dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
-                       
 
                         File.WriteAllText(file, content);
                         startText += $"pm2 delete {package.Name}-{x.Name};";
                         startText += $"pm2 start {file} --name {package.Name}-{x.Name};";
                     }
-                    
+                    else
+                    {
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" building of {x.Name}\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}/{x.Name}.csproj");
+                        process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
+                        process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
+                        process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
+                        var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
+                        string content = "";
+
+                        content = $"dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
+
+
+                        File.WriteAllText(file, content);
+                        startText += $"pm2 delete {package.Name}-{x.Name};";
+                        startText += $"pm2 start {file} --name {package.Name}-{x.Name};";
+                    }
+
                 });
 
                 var startfile = $"./start.sh";
@@ -1156,20 +1266,23 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
             }
-            
+
         }
 
-        public void DockerFilesCreationAndInject(string packageFile){
-             
-            try{
+        public void DockerFilesCreationAndInject(string packageFile)
+        {
+
+            try
+            {
                 var text = File.ReadAllText(packageFile);
                 Package package = JsonConvert.DeserializeObject<Package>(text);
                 var ocelotText = File.ReadAllText("./Gateway.WebApi/ocelot.json");
                 Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
 
                 // create dist file
-                if(Directory.Exists("./dist")){
-                     var directory = new DirectoryInfo("./dist") { Attributes = FileAttributes.Normal };
+                if (Directory.Exists("./dist"))
+                {
+                    var directory = new DirectoryInfo("./dist") { Attributes = FileAttributes.Normal };
 
                     foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
                     {
@@ -1181,25 +1294,15 @@ namespace miccore.Utility{
 
                 Directory.CreateDirectory("./dist");
 
-                 // build migration image
-                var process = Process.Start("docker", $"build . -t migration.image -f Dockerfile.Migration");
-                process.WaitForExit();
-
-                // save image in tar file
-                process = Process.Start("docker", $"save --output ./dist/migration.image.tar migration.image");
-                process.WaitForExit();
-
-                // copy docker compose file to dist
-                process = Process.Start("cp", $"docker-compose.yml ./dist/docker-compose.yml");
-                process.WaitForExit();
 
                 // build solution
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 Console.WriteLine($" Ocelot docker file generation ...\n");
                 Console.WriteLine($" \n******************************************************************************************** \n");
-                
-                package.Projects.ForEach(x => {
-                    
+
+                package.Projects.ForEach(x =>
+                {
+
                     var routes = ocelot.Routes.Where(y => y.DownstreamHostAndPorts[0].Port.ToString() == x.Port)
                                             .ToList();
                     foreach (var item in routes)
@@ -1207,12 +1310,13 @@ namespace miccore.Utility{
                         item.DownstreamHostAndPorts[0].Host = x.DockerUrl.ToString();
                         item.DownstreamHostAndPorts[0].Port = 80;
                     }
-                    var name = x.Name.Split('.')[0]+'s';
+                    var name = x.Name.Split('.')[0] + 's';
                     var conf = ocelot.SwaggerEndPoints.Where(y => y.Key == name).FirstOrDefault();
-                    if(conf != null){
+                    if (conf != null)
+                    {
                         conf.Config[0].Url = $"http://{x.DockerUrl}:80/swagger/v1/swagger.json";
                     }
-                    
+
                 });
                 OcelotFileWrite(ocelot, "./Gateway.WebApi/ocelot.docker.json");
 
@@ -1222,60 +1326,167 @@ namespace miccore.Utility{
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 var process1 = Process.Start("dotnet", "build");
                 process1.WaitForExit();
-                
-                package.Projects.ForEach(x => {
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
-                    if(x.Name == "Gateway.WebApi"){
+                //string of sh file
+                string bash = "#!/bin/bash \n\n\n";
+
+                package.Projects.ForEach(x =>
+                {
+
+                    if (x.Name == "Gateway.WebApi")
+                    {
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         Console.WriteLine($" building of {x.Name}\n");
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
                         // publish
                         process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}.csproj -c Release");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         // build image
-                        process1 = Process.Start("docker", $"build ./{x.Name} -t {x.Name.ToLower()}.image");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" Building {x.Name} Image ...\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        process1 = Process.Start("docker", $"build ./{x.Name} -t {x.Name.ToLower()}.image -f ./{x.Name}/Dockerfile.{x.Name.Split('.')[0]}");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         // save image in tar file
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" Saving {x.Name} Image  ...\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
                         process1 = Process.Start("docker", $"save --output ./dist/{x.Name.ToLower()}.image.tar {x.Name.ToLower()}.image");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
 
-                    }else{
+                        // add from bash
+                        bash += $"# load {x.Name} Image \n";
+                        bash += $"docker load --input {x.Name.ToLower()}.image.tar\n\n";
+
+                    }
+                    else
+                    {
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         Console.WriteLine($" building of {x.Name}\n");
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
                         // publish image
                         process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}/{x.Name}.csproj -c Release");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         // build image
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" Building {x.Name} Image ...\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
                         process1 = Process.Start("docker", $"build ./{x.Name} -t {x.Name.ToLower()}.image -f ./{x.Name}/Dockerfile.{x.Name.Split('.')[0]}");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         // save image in tar file
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" Saving {x.Name} Image ...\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
                         process1 = Process.Start("docker", $"save --output ./dist/{x.Name.ToLower()}.image.tar {x.Name.ToLower()}.image");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
+                        // add from bash
+                        bash += $"# load {x.Name} Image \n";
+                        bash += $"docker load --input {x.Name.ToLower()}.image.tar\n\n";
 
                     }
-                    
+
                 });
 
+                // build migration image
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" Building Migrations Image ...\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                var process = Process.Start("docker", $"build . -t migration.image -f Dockerfile.Migration");
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(process.StandardError.ReadLine());
+                }
+
+                // save image in tar file
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" Saving Migration Image ...\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                process = Process.Start("docker", $"save --output ./dist/migration.image.tar migration.image");
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(process.StandardError.ReadLine());
+                }
+
+                // copy docker compose file to dist
+                process = Process.Start("cp", $"docker-compose.yml ./dist/docker-compose.yml");
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(process.StandardError.ReadLine());
+                }
+                // add from bash
+                bash += $"# load Migration Image \n";
+                bash += $"docker load --input migration.image.tar\n\n\n";
+
+                // write bash file
+                var startfile = $"./dist/load-images.sh";
+                File.WriteAllText(startfile, bash);
 
             }
             catch (System.Exception ex)
             {
                 Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
+                throw new Exception(ex.Message);
             }
-            
+
         }
 
 
-        public void DockerFilesCreationAndInjectOut(string packageFile, string OutFolder){
-             
-            try{
-                if(Directory.Exists(OutFolder)){
-                     var directory = new DirectoryInfo(OutFolder) { Attributes = FileAttributes.Normal };
+        public void DockerFilesCreationAndInjectOut(string packageFile, string OutFolder)
+        {
+
+            try
+            {
+                if (Directory.Exists(OutFolder))
+                {
+                    var directory = new DirectoryInfo(OutFolder) { Attributes = FileAttributes.Normal };
 
                     foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
                     {
@@ -1286,7 +1497,7 @@ namespace miccore.Utility{
                 }
 
                 Directory.CreateDirectory(OutFolder);
-               
+
                 var text = File.ReadAllText(packageFile);
                 Package package = JsonConvert.DeserializeObject<Package>(text);
                 var ocelotText = File.ReadAllText("./Gateway.WebApi/ocelot.json");
@@ -1295,9 +1506,10 @@ namespace miccore.Utility{
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 Console.WriteLine($" Ocelot docker file generation ...\n");
                 Console.WriteLine($" \n******************************************************************************************** \n");
-                
-                package.Projects.ForEach(x => {
-                    
+
+                package.Projects.ForEach(x =>
+                {
+
                     var routes = ocelot.Routes.Where(y => y.DownstreamHostAndPorts[0].Port.ToString() == x.Port)
                                             .ToList();
                     foreach (var item in routes)
@@ -1305,12 +1517,13 @@ namespace miccore.Utility{
                         item.DownstreamHostAndPorts[0].Host = x.DockerUrl.ToString();
                         item.DownstreamHostAndPorts[0].Port = 80;
                     }
-                    var name = x.Name.Split('.')[0]+'s';
+                    var name = x.Name.Split('.')[0] + 's';
                     var conf = ocelot.SwaggerEndPoints.Where(y => y.Key == name).FirstOrDefault();
-                    if(conf != null){
+                    if (conf != null)
+                    {
                         conf.Config[0].Url = $"http://{x.DockerUrl}:80/swagger/v1/swagger.json";
                     }
-                    
+
                 });
                 OcelotFileWrite(ocelot, "./Gateway.WebApi/ocelot.docker.json");
 
@@ -1320,20 +1533,34 @@ namespace miccore.Utility{
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 var process1 = Process.Start("dotnet", "build");
                 process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
                 Directory.SetCurrentDirectory(OutFolder);
-                
-                package.Projects.ForEach(x => {
 
-                    if(x.Name == "Gateway.WebApi"){
+                package.Projects.ForEach(x =>
+                {
+
+                    if (x.Name == "Gateway.WebApi")
+                    {
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         Console.WriteLine($" building of {x.Name}\n");
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
-                        
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
 
                         var content = $"FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build\n";
                         content += $"WORKDIR /app";
@@ -1341,25 +1568,35 @@ namespace miccore.Utility{
                         content += $"RUN mv ocelot.docker.json ocelot.json";
                         content += $"ENTRYPOINT [\"dotnet\", \"{x.Name}.dll\"]";
                         File.WriteAllText($"./Dockerfile.{x.Name.Split('.')[0]}", content);
-                    
-                    }else{
+
+                    }
+                    else
+                    {
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         Console.WriteLine($" building of {x.Name}\n");
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
-                        
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
 
                         var content = $"FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build\n";
                         content += $"WORKDIR /app";
                         content += $"COPY ./{x.Name}/. .";
                         content += $"ENTRYPOINT [\"dotnet\", \"{x.Name}.dll\"]";
                         File.WriteAllText($"./Dockerfile.{x.Name.Split('.')[0]}", content);
-        
+
                     }
-                    
+
                 });
 
                 File.Copy("../package.json", "./package.json");
@@ -1382,33 +1619,38 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
             }
-            
+
         }
 
-        public void OcelotFileWrite(Ocelot ocelot, string filepath){
+        public void OcelotFileWrite(Ocelot ocelot, string filepath)
+        {
             string content = "{\n";
 
             content += $"\t\"Routes\": [\n";
-            ocelot.Routes.ForEach(x => {
+            ocelot.Routes.ForEach(x =>
+            {
                 content += "\t\t{ \n";
                 content += $"\t\t\t\"DownstreamPathTemplate\": \"{x.DownstreamPathTemplate}\",\n";
                 content += $"\t\t\t\"DownstreamScheme\": \"{x.DownstreamScheme}\",\n";
                 content += $"\t\t\t\"DownstreamHostAndPorts\": [\n";
-                
-                x.DownstreamHostAndPorts.ForEach(y => {
+
+                x.DownstreamHostAndPorts.ForEach(y =>
+                {
                     content += $"\t\t\t\t{{\n";
                     content += $"\t\t\t\t\t\"Host\":\"{y.Host}\",\n";
                     content += $"\t\t\t\t\t\"Port\": {y.Port}\n";
                     content += $"\t\t\t\t}}\n";
                 });
-                
+
                 content += $"\t\t\t],\n";
                 content += $"\t\t\t\"UpstreamPathTemplate\": \"{x.UpstreamPathTemplate}\",\n";
                 content += $"\t\t\t\"UpstreamHttpMethod\":[ ";
 
-                x.UpstreamHttpMethod.ForEach(u => {
+                x.UpstreamHttpMethod.ForEach(u =>
+                {
                     content += $"\"{u}\"";
-                    if(!x.UpstreamHttpMethod.Last().Equals(u)){
+                    if (!x.UpstreamHttpMethod.Last().Equals(u))
+                    {
                         content += $", ";
                     }
                 });
@@ -1417,35 +1659,39 @@ namespace miccore.Utility{
                 content += $"\t\t\t\"SwaggerKey\": \"{x.SwaggerKey}\"\n";
                 content += "\t\t}";
 
-                if(!ocelot.Routes.Last().Equals(x)){
+                if (!ocelot.Routes.Last().Equals(x))
+                {
                     content += ", \n";
                 }
             });
-            content += $"\n\t],\n";    
-            
-            content += $"\t\"SwaggerEndPoints\": [\n"; 
-            ocelot.SwaggerEndPoints.ForEach(x => {
+            content += $"\n\t],\n";
+
+            content += $"\t\"SwaggerEndPoints\": [\n";
+            ocelot.SwaggerEndPoints.ForEach(x =>
+            {
                 content += "\t\t{ \n";
                 content += $"\t\t\t\"Key\": \"{x.Key}\",\n";
                 content += $"\t\t\t\"Config\": [\n";
-                
-                x.Config.ForEach(y => {
+
+                x.Config.ForEach(y =>
+                {
                     content += $"\t\t\t\t{{\n";
                     content += $"\t\t\t\t\t\"Name\":\"{y.Name}\",\n";
                     content += $"\t\t\t\t\t\"Version\": \"{y.Version}\",\n";
                     content += $"\t\t\t\t\t\"Url\": \"{y.Url}\"\n";
                     content += $"\t\t\t\t}}\n";
                 });
-                
+
                 content += $"\t\t\t]\n";
-               content += "\t\t}";
-                if(!ocelot.SwaggerEndPoints.Last().Equals(x)){
+                content += "\t\t}";
+                if (!ocelot.SwaggerEndPoints.Last().Equals(x))
+                {
                     content += ", \n";
                 }
             });
-            content += $"\n\t]\n";   
+            content += $"\n\t]\n";
 
-            content += "}";            
+            content += "}";
 
             try
             {
@@ -1457,9 +1703,11 @@ namespace miccore.Utility{
             }
         }
 
-        public void SHFilesBuilding(string packageFile){
-            
-            try{
+        public void SHFilesBuilding(string packageFile)
+        {
+
+            try
+            {
                 var text = File.ReadAllText(packageFile);
                 Package package = JsonConvert.DeserializeObject<Package>(text);
 
@@ -1468,22 +1716,30 @@ namespace miccore.Utility{
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 var process1 = Process.Start("dotnet", "build");
                 process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
 
-                package.Projects.ForEach(x => {
+                package.Projects.ForEach(x =>
+                {
 
                     var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
                     File.Create(file);
                     string content = "";
 
-                    if(package.Projects.First().Equals(x)){
+                    if (package.Projects.First().Equals(x))
+                    {
                         content = $"cp ./{x.Name}/ocelot.json .;dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
-                    }else{
+                    }
+                    else
+                    {
                         content = $"dotnet ./{x.Name}/{x.Name}.dll --urls \"http://localhost:{x.Port}\";";
                     }
 
                     File.WriteAllText(file, content);
-                   
+
                 });
 
             }
@@ -1491,16 +1747,16 @@ namespace miccore.Utility{
             {
                 Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
             }
-            
+
         }
 
-      /**
-        *
-        *end  sh file builder
-        *
-        */
+        /**
+          *
+          *end  sh file builder
+          *
+          */
 
-        
+
 
 
 
