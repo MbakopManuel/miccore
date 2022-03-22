@@ -47,6 +47,12 @@ namespace miccore
                     return Task.FromResult(1);
                 }
 
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" building of the solution\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                var process1 = Process.Start("dotnet", "build");
+                process1.WaitForExit();
+
                 // dependency tree variable
                 List<string> schedule = new List<string>();
 

@@ -1414,17 +1414,25 @@ namespace miccore.Utility{
                 }
 
                 // copy docker compose file to dist
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" Saving docker compose ...\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
                 process = Process.Start("cp", $"docker-compose.yml ./dist/docker-compose.yml");
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                 {
                     throw new Exception(process.StandardError.ReadLine());
                 }
+
+                
                 // add from bash
                 bash += $"# load Migration Image \n";
                 bash += $"docker load --input migration.image.tar\n\n\n";
 
                 // write bash file
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" generate docker load sh fie ...\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
                 var startfile = $"./dist/load-images.sh";
                 File.WriteAllText(startfile, bash);
 
