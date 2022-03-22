@@ -46,6 +46,10 @@ namespace miccore.reference
                     var to = $"{_to}.Api/{_to}.Api/{_to}.Api.csproj";
                     var process = Process.Start("dotnet", $"add {to} reference {from}");
                     process.WaitForExit();
+                    if (process.ExitCode != 0)
+                    {
+                        throw new Exception(process.StandardError.ReadLine());
+                    }
 
                     InjectionUtility injection = new InjectionUtility();
 

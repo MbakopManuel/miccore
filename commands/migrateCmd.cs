@@ -105,6 +105,10 @@ namespace miccore
                     // run the dotnet ef databse update command
                     var process = Process.Start(exec, "database update");
                     process.WaitForExit();
+                    if (process.ExitCode != 0)
+                    {
+                        throw new Exception(process.StandardError.ReadLine());
+                    }
                 });
 
                 return Task.FromResult(0);

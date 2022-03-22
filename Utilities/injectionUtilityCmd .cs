@@ -733,8 +733,7 @@ namespace miccore.Utility{
                     dict.container_name = projectName.ToLower();
                     dict.ports.RemoveAt(0);
                     dict.ports.Add(lastport+":"+80);
-                    dict.build.context = "./"+projectName+".Api";
-                    dict.build.dockerfile = "Dockerfile."+projectName;
+                    dict.image = (projectName+".Api").ToLower()+"image:latest";
                     dict.networks.static_network.ipv4_address = lasturl;
                     
                     var project = new Project();
@@ -1104,6 +1103,10 @@ namespace miccore.Utility{
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 var process1 = Process.Start("dotnet", "build");
                 process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
                 if(Directory.Exists("./dist")){
                      var directory = new DirectoryInfo("./dist") { Attributes = FileAttributes.Normal };
@@ -1129,9 +1132,17 @@ namespace miccore.Utility{
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
                         
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
                         var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
                         string content = "";
@@ -1148,9 +1159,17 @@ namespace miccore.Utility{
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
                         
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
                         var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
                         string content = "";
@@ -1176,17 +1195,21 @@ namespace miccore.Utility{
             
         }
 
-        public void DockerFilesCreationAndInject(string packageFile){
-             
-            try{
+        
+        public void DockerFilesCreationAndInject(string packageFile)
+        {
+
+            try
+            {
                 var text = File.ReadAllText(packageFile);
                 Package package = JsonConvert.DeserializeObject<Package>(text);
                 var ocelotText = File.ReadAllText("./Gateway.WebApi/ocelot.json");
                 Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
 
                 // create dist file
-                if(Directory.Exists("./dist")){
-                     var directory = new DirectoryInfo("./dist") { Attributes = FileAttributes.Normal };
+                if (Directory.Exists("./dist"))
+                {
+                    var directory = new DirectoryInfo("./dist") { Attributes = FileAttributes.Normal };
 
                     foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
                     {
@@ -1198,25 +1221,15 @@ namespace miccore.Utility{
 
                 Directory.CreateDirectory("./dist");
 
-                 // build migration image
-                var process = Process.Start("docker", $"build . -t migration.image -f Dockerfile.Migration");
-                process.WaitForExit();
-
-                // save image in tar file
-                process = Process.Start("docker", $"save --output ./dist/migration.image.tar migration.image");
-                process.WaitForExit();
-
-                // copy docker compose file to dist
-                process = Process.Start("cp", $"docker-compose.yml ./dist/docker-compose.yml");
-                process.WaitForExit();
 
                 // build solution
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 Console.WriteLine($" Ocelot docker file generation ...\n");
                 Console.WriteLine($" \n******************************************************************************************** \n");
-                
-                package.Projects.ForEach(x => {
-                    
+
+                package.Projects.ForEach(x =>
+                {
+
                     var routes = ocelot.Routes.Where(y => y.DownstreamHostAndPorts[0].Port.ToString() == x.Port)
                                             .ToList();
                     foreach (var item in routes)
@@ -1224,12 +1237,13 @@ namespace miccore.Utility{
                         item.DownstreamHostAndPorts[0].Host = x.DockerUrl.ToString();
                         item.DownstreamHostAndPorts[0].Port = 80;
                     }
-                    var name = x.Name.Split('.')[0]+'s';
+                    var name = x.Name.Split('.')[0] + 's';
                     var conf = ocelot.SwaggerEndPoints.Where(y => y.Key == name).FirstOrDefault();
-                    if(conf != null){
+                    if (conf != null)
+                    {
                         conf.Config[0].Url = $"http://{x.DockerUrl}:80/swagger/v1/swagger.json";
                     }
-                    
+
                 });
                 OcelotFileWrite(ocelot, "./Gateway.WebApi/ocelot.docker.json");
 
@@ -1239,53 +1253,190 @@ namespace miccore.Utility{
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 var process1 = Process.Start("dotnet", "build");
                 process1.WaitForExit();
-                
-                package.Projects.ForEach(x => {
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
-                    if(x.Name == "Gateway.WebApi"){
+                //string of sh file
+                string bash = "#!/bin/bash \n\n\n";
+
+                package.Projects.ForEach(x =>
+                {
+
+                    if (x.Name == "Gateway.WebApi")
+                    {
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         Console.WriteLine($" building of {x.Name}\n");
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
                         // publish
                         process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}.csproj -c Release");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         // build image
-                        process1 = Process.Start("docker", $"build ./{x.Name} -t {x.Name.ToLower()}.image");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" Building {x.Name} Image ...\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        process1 = Process.Start("docker", $"build ./{x.Name} -t {x.Name.ToLower()}.image -f ./{x.Name}/Dockerfile.{x.Name.Split('.')[0]}");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         // save image in tar file
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" Saving {x.Name} Image  ...\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
                         process1 = Process.Start("docker", $"save --output ./dist/{x.Name.ToLower()}.image.tar {x.Name.ToLower()}.image");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
 
-                    }else{
+                        // add from bash
+                        bash += $"# load {x.Name} Image \n";
+                        bash += $"docker load --input {x.Name.ToLower()}.image.tar\n\n";
+
+                    }
+                    else
+                    {
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         Console.WriteLine($" building of {x.Name}\n");
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
                         // publish image
                         process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}/{x.Name}.csproj -c Release");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         // build image
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" Building {x.Name} Image ...\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
                         process1 = Process.Start("docker", $"build ./{x.Name} -t {x.Name.ToLower()}.image -f ./{x.Name}/Dockerfile.{x.Name.Split('.')[0]}");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
                         // save image in tar file
+                        Console.WriteLine($" \n******************************************************************************************** \n");
+                        Console.WriteLine($" Saving {x.Name} Image ...\n");
+                        Console.WriteLine($" \n******************************************************************************************** \n");
                         process1 = Process.Start("docker", $"save --output ./dist/{x.Name.ToLower()}.image.tar {x.Name.ToLower()}.image");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
+                        if (process1.ExitCode != 0)
+                        {
+                            throw new Exception(process1.StandardError.ReadLine());
+                        }
+
+                        // add from bash
+                        bash += $"# load {x.Name} Image \n";
+                        bash += $"docker load --input {x.Name.ToLower()}.image.tar\n\n";
 
                     }
-                    
+
                 });
 
+                // build migration image
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" Building Migrations Image ...\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                var process = Process.Start("docker", $"build . -t migration.image -f Dockerfile.Migration");
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(process.StandardError.ReadLine());
+                }
+
+                // save image in tar file
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                Console.WriteLine($" Saving Migration Image ...\n");
+                Console.WriteLine($" \n******************************************************************************************** \n");
+                process = Process.Start("docker", $"save --output ./dist/migration.image.tar migration.image");
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(process.StandardError.ReadLine());
+                }
+
+                // copy docker compose file to dist
+                process = Process.Start("cp", $"docker-compose.yml ./dist/docker-compose.yml");
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(process.StandardError.ReadLine());
+                }
+                // add from bash
+                bash += $"# load Migration Image \n";
+                bash += $"docker load --input migration.image.tar\n\n\n";
+
+                // write bash file
+                var startfile = $"./dist/load-images.sh";
+                File.WriteAllText(startfile, bash);
 
             }
             catch (System.Exception ex)
             {
                 Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
+                throw new Exception(ex.Message);
             }
-            
+
         }
+
 
 
         public void DockerFilesCreationAndInjectOut(string packageFile, string OutFolder){
@@ -1337,6 +1488,10 @@ namespace miccore.Utility{
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 var process1 = Process.Start("dotnet", "build");
                 process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
                 Directory.SetCurrentDirectory(OutFolder);
                 
@@ -1348,9 +1503,17 @@ namespace miccore.Utility{
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
                         
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
                         var content = $"FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build\n";
                         content += $"WORKDIR /app";
@@ -1365,9 +1528,17 @@ namespace miccore.Utility{
                         Console.WriteLine($" \n******************************************************************************************** \n");
                         var process1 = Process.Start("dotnet", $"restore ../{x.Name}/{x.Name}/{x.Name}.csproj");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
                         
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
                         var content = $"FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build\n";
                         content += $"WORKDIR /app";
@@ -1485,6 +1656,10 @@ namespace miccore.Utility{
                 Console.WriteLine($" \n******************************************************************************************** \n");
                 var process1 = Process.Start("dotnet", "build");
                 process1.WaitForExit();
+                if (process1.ExitCode != 0)
+                {
+                    throw new Exception(process1.StandardError.ReadLine());
+                }
 
 
                 package.Projects.ForEach(x => {

@@ -152,9 +152,17 @@ namespace miccore.project
                 // add api project ot solution
                 var process = Process.Start("dotnet", $"sln Microservice.WebApi.sln add ./{_name}/{_name}/{_name}.csproj");
                 process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(process.StandardError.ReadLine());
+                }
                 // add api test project to solution
                 process = Process.Start("dotnet", $"sln Microservice.WebApi.sln add ./{_name}/{_name}.Test/{_name}.Test.csproj");
                 process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(process.StandardError.ReadLine());
+                }
 
                 // buil the solution
                 OutputToConsole($" \n******************************************************************************************** \n");
@@ -162,6 +170,10 @@ namespace miccore.project
                 OutputToConsole($" \n******************************************************************************************** \n\n");
                 process = Process.Start("dotnet", $"build");
                 process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(process.StandardError.ReadLine());
+                }
 
                 // inject the project to the package json file
                 OutputToConsole($" \n******************************************************************************************** \n");
