@@ -32,10 +32,23 @@ namespace miccore
             try
             {
                 if(File.Exists("./Microservice.WebApi.sln")){
+
                     
                     if(!File.Exists("./package.json")){
                         OutputError("breaking project, package.json file doesn't exist\n");
                         return Task.FromResult(1);
+                    }
+
+                    Console.WriteLine($" \n******************************************************************************************** \n");
+                    Console.WriteLine($" building of the solution\n");
+                    Console.WriteLine($" \n******************************************************************************************** \n");
+                    var process1 = Process.Start("dotnet", "build");
+                    process1.WaitForExit();
+
+                    
+                    if (process1.ExitCode != 0)
+                    {
+                        throw new Exception(process1.StandardError.ReadLine());
                     }
 
                     List<string> schedule = new List<string>();
@@ -69,7 +82,6 @@ namespace miccore
                         }
                     });
 
-                    // schedule.ForEach(x => Console.WriteLine(x));
 
                     var current = Path.GetFullPath(".");
                     var exec = "";
