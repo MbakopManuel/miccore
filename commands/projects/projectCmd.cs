@@ -25,11 +25,6 @@ namespace miccore.project
                 ShowInHelpText = true)]
         public string _name {get; set; }
 
-        [Option(" --server | -s",
-                CommandOptionType.SingleValue,
-                Description = "The type of database server, we have two types (mysql or sqlserver). default: mysql",
-                ShowInHelpText = true)]
-        public string _server {get; set; }
         public projectCmd(ILogger<projectCmd> logger, IConsole console){
             _logger = logger;
             _console = console;
@@ -37,160 +32,154 @@ namespace miccore.project
 
         protected override Task<int> OnExecute(CommandLineApplication app)
         {
-            RenameUtility rename = new RenameUtility();
-            InjectionUtility injection = new InjectionUtility();
+            InjectionUtility injection = new InjectionUtility(_logger);
             try
             {
+                 // check if package json file exist
+                if(!File.Exists("./package.json")){
+                    OutputError("Error: Package file not found");
+                    return Task.FromResult(1);
+                }
                 
+                // get the company name to the package json file
+                var text = File.ReadAllText("./package.json");
+                Package package = JsonConvert.DeserializeObject<Package>(text);
+               
+                // company name
+                string companyName = package.Company;
+                string projectName = package.Name;
                 // check if it's microservice webapi solution
-                if(!File.Exists("./Microservice.WebApi.sln")){
+                if(!File.Exists($"./{companyName}.{projectName}.sln")){
                     // return error if not
-                     OutputError("microservice solution not found.\ngo to the general project");
+                     OutputError("Microservice solution not found.\ngo to the general project");
                     return Task.FromResult(1);
                 }
                 
                 // check if name is given
                 if(string.IsNullOrEmpty(_name)){
                     // return error if not
-                    OutputError($"\n name option is required to execute this command\n\n");
+                    OutputError($"Name option is required to execute this command");
                     return Task.FromResult(1);
                 }
 
-                // check if package json file exist
-                if(!File.Exists("./package.json")){
-                    OutputError("\n\nError: Package file not found\n\n");
+                // check if project already exist
+                var project = package.Projects.Find(x => x.Name == _name);
+                if(project is not null){
+                    OutputError($"Error: Project {_name}  already exist, please create another or change the name");
                     return Task.FromResult(1);
                 }
-                // get the company name to the package json file
-                var text = File.ReadAllText("./package.json");
-                Package package = JsonConvert.DeserializeObject<Package>(text);
-                // company name
-                string companyName = package.CompanyName;
-                string projectName = package.Name;
 
-                // parsethe name to camel case
+                // parse the name to camel case
                 _name = char.ToUpper(_name[0]) + _name.Substring(1).ToLower();
                 var name = _name;
-                _name = $"{_name}.Api";
+                _name = $"{companyName}.{projectName}.{_name}";
                 
                 // check if project with that name exist already
                 if(Directory.Exists($"./{_name}")){
                     // return error if it's
-                    OutputError($"\nProject {_name} already exist, please create another or change the name\n\n");
+                    OutputError($"Project {_name} folder already exist, please create another or change the name\n");
                     return Task.FromResult(1);
                 }
                 
                 // if it's project with authentification 
                 if(_auth){
                     
+                    _name = $"{companyName}.{projectName}.Auth";
                     // clone the project
-                    OutputToConsole($" \n******************************************************************************************** \n");
-                    OutputToConsole($"   add microservice with authentication with name {_name} ... \n");
-                    OutputToConsole($" \n******************************************************************************************** \n\n");
-                    switch (_server)
-                    {
-                        case "sqlserver":
-                            runCloneProject(_name, _source_user_microservice_sqlserver);
-                        break;
-                        
-                        default:
-                            runCloneProject(_name, _source_user_microservice);
-                        break;
-                    }
-                    
+                    OutputToConsole($"Add microservice with authentication with name {_name} ... ");
+                    runCloneProject(_name, _clean_auth);
 
                     // rename elements 
-                    OutputToConsole($" \n******************************************************************************************** \n");
-                    OutputToConsole($"  renaming ... \n");
-                    OutputToConsole($" \n******************************************************************************************** \n\n");
+                    OutputToConsole($"Renaming ... ");
                     Directory.SetCurrentDirectory($"../");
                     
-                    // rename user by the name of project
-                    rename.Rename($"{_name}/", "User.Api", _name);
-                    rename.Rename($"{_name}/", "User.Api.Test", $"{_name}.Test/");
+                    // // rename user by the name of project
+                    // RenameUtility.Rename($"{_name}/", "Auth", name);
+                    // RenameUtility.Rename($"{_name}/", "auth", name.ToLower());
 
                 }
                 // if it's without authentification
                 else{
                     
                     // clone the project
-                    OutputToConsole($" \n******************************************************************************************** \n");
-                    OutputToConsole($"   add microservice without authentication with name {_name} ... \n");
-                    OutputToConsole($" \n******************************************************************************************** \n\n");
-                    switch (_server)
-                    {
-                        case "sqlserver":
-                            runCloneProject(_name, _source_sample_microservice_sqlserver);
-                        break;
-                        
-                        default:
-                            runCloneProject(_name, _source_sample_microservice);
-                        break;
-                    }
+                    OutputToConsole($"Add microservice without authentication with name {_name} ... ");
+                    runCloneProject(_name, _clean_sample);
                     
-
                     // rename the elements
-                    OutputToConsole($" \n******************************************************************************************** \n");
-                    OutputToConsole($"  renaming ... \n");
-                    OutputToConsole($" \n******************************************************************************************** \n\n");
+                    OutputToConsole($"Renaming ... ");
                     Directory.SetCurrentDirectory($"../");
                     
-                    rename.Rename($"./{_name}/", "Sample", name);
-                    rename.Rename($"./{_name}/", "sample",  char.ToLower(name[0]) + name.Substring(1).ToLower());
+                    RenameUtility.Rename($"{_name}/", "Sample", name);
+                    RenameUtility.Rename($"{_name}/", "SAMPLE", name.ToUpper());
+                    RenameUtility.Rename($"./{_name}/", "sample",  char.ToLower(name[0]) + name.Substring(1).ToLower());
 
                 }
 
                 // rename company name by default for the real company name
-                rename.Rename($"{_name}/", "Miccore.Net", companyName);
+                RenameUtility.Rename($"./{_name}/", "Miccore", companyName);
                 // rename project name by default for the real project name
-                rename.Rename($"{_name}/", "webapi_template", projectName);
-                
+                RenameUtility.Rename($"./{_name}/", "CleanArchitecture", projectName);
                 // adding the project to the existing solution
-                OutputToConsole($" \n******************************************************************************************** \n");
-                OutputToConsole($"  adding project to the solution ... \n");
-                OutputToConsole($" \n******************************************************************************************** \n\n");
+                OutputToConsole($"Adding project to the solution ... ");
                 // add api project ot solution
-                var process = Process.Start("dotnet", $"sln Microservice.WebApi.sln add ./{_name}/{_name}/{_name}.csproj");
+                var process = new Process();
+                process.StartInfo.FileName = "dotnet";
+                process.StartInfo.Arguments = $"sln {companyName}.{projectName}.sln add ./{_name}/src/{_name}.Api/{_name}.Api.csproj";
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.RedirectStandardOutput = false;
+                process.StartInfo.CreateNoWindow = true;
+                process.StartInfo.UseShellExecute = false;
+                process.Start();
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                 {
-                    throw new Exception(process.StandardError.ReadLine());
+                    OutputError(process.StandardError.ReadToEnd());
+                    throw new Exception(process.StandardError.ReadToEnd());
                 }
                 // add api test project to solution
-                process = Process.Start("dotnet", $"sln Microservice.WebApi.sln add ./{_name}/{_name}.Test/{_name}.Test.csproj");
+                process.StartInfo.FileName = "dotnet";
+                process.StartInfo.Arguments = $"sln {companyName}.{projectName}.sln add ./{_name}/tests/{_name}.IntegrationTest/{_name}.IntegrationTest.csproj";
+                process.Start();
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                 {
-                    throw new Exception(process.StandardError.ReadLine());
+                    OutputError(process.StandardError.ReadToEnd());
+                    throw new Exception(process.StandardError.ReadToEnd());
                 }
 
-                // buil the solution
-                OutputToConsole($" \n******************************************************************************************** \n");
-                OutputToConsole($"  build the solution ... \n");
-                OutputToConsole($" \n******************************************************************************************** \n\n");
-                process = Process.Start("dotnet", $"build");
+                process.StartInfo.FileName = "dotnet";
+                process.StartInfo.Arguments = $"sln {companyName}.{projectName}.sln add ./{_name}/tests/{_name}.UnitTest/{_name}.UnitTest.csproj";
+                process.Start();
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                 {
-                    throw new Exception(process.StandardError.ReadLine());
+                    OutputError(process.StandardError.ReadToEnd());
+                    throw new Exception(process.StandardError.ReadToEnd());
+                }
+
+                //rename miccore pagination package
+                RenameUtility.Rename($"./{_name}/", $"{companyName}.Net.Pagination", $"Miccore.Net.Pagination");
+                RenameUtility.Rename($"./{_name}/", $"{companyName}.Pagination.Model", $"Miccore.Pagination.Model");
+                RenameUtility.Rename($"./{_name}/", $"{companyName}.Pagination.Service", $"Miccore.Pagination.Service");
+
+                // buil the solution
+                OutputToConsole($"Build the solution ...");
+                process.StartInfo.FileName = "dotnet";
+                process.StartInfo.Arguments = $"build";
+                process.Start();
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    OutputError(process.StandardError.ReadToEnd());
+                    throw new Exception(process.StandardError.ReadToEnd());
                 }
 
                 // inject the project to the package json file
-                OutputToConsole($" \n******************************************************************************************** \n");
-                OutputToConsole($"  package json injection ... \n");
-                OutputToConsole($" \n******************************************************************************************** \n\n");
+                OutputToConsole($"Package json injection ... ");
                 injection.PackageJsonProjectInject("./package.json", _name, _auth);
-                
-                // inject the project to the ocelot file
-                OutputToConsole($" \n******************************************************************************************** \n");
-                OutputToConsole($"  Ocelot json injection ... \n");
-                OutputToConsole($" \n******************************************************************************************** \n\n");
-                injection.OcelotProjectInjection("./Gateway.WebApi/ocelot.json", name);
 
                 // inject the project to the docker compose file
-                OutputToConsole($" \n******************************************************************************************** \n");
-                OutputToConsole($"  Docker compose json injection ... \n");
-                OutputToConsole($" \n******************************************************************************************** \n\n");
+                OutputToConsole($"Docker compose json injection ... ");
                 injection.DockerProjectInjection("./docker-compose.yml", name);
 
                

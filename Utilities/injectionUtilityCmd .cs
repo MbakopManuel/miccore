@@ -11,10 +11,123 @@ using Newtonsoft.Json;
 using YamlDotNet.Serialization;
 
 namespace miccore.Utility{
-    class InjectionUtility{
+    class InjectionUtility : miccoreBaseCmd {
 
-        public InjectionUtility(){
+        private string _package = @"
+        {<br>
+            &nbsp;&nbsp;company: {0};<br>
+            &nbsp;&nbsp;name: {1};<br>
+            &nbsp;&nbsp;version: {2};<br>
+            &nbsp;&nbsp;projects: [];<br>
+        }
+        ";
+        private string _project = @"
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name: {0};<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; port: {1};<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dockerUrl: {2};<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; references: [];<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; services: [];<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+        ";
 
+        public InjectionUtility(ILogger logger){
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// infrastructure db context injection
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="project"></param>
+        /// <param name="serviceName"></param>
+        public void InfrastructureDbContextInject(string filepath, string project, string serviceName){
+            var text = File.ReadAllLines(filepath);
+            int i = Array.IndexOf(text, "        #endregion");
+            var pre = text.Take(i - 1);
+            var post = text.Skip(i-1);
+            string[] add = new string[]{
+                $"\t\tpublic DbSet<{project}.Core.Entities.{serviceName}> {serviceName}s",
+                $"\t\t{{",
+                $"\t\t\tget;",
+                $"\t\t\tset;",
+                $"\t\t}}",
+                $"\n",
+            };
+
+            pre = pre.Concat(add);
+            pre = pre.Concat(post);
+
+            try
+            {
+                File.WriteAllText(filepath, string.Join('\n', pre));
+            }
+            catch (System.Exception ex)
+            {
+                OnException(ex);
+                throw new Exception(ex.Message);
+            }
+        }   
+
+        /// <summary>
+        /// infrastructure service injection
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="project"></param>
+        /// <param name="serviceName"></param>
+        public void InfrastructureServiceInject(string filepath, string project, string serviceName){
+            var text = File.ReadAllLines(filepath);
+            int i = Array.IndexOf(text, "            #endregion");
+            var pre = text.Take(i - 1);
+            var post = text.Skip(i-1);
+            string[] add = new string[]{
+                $"\t\t\tservices.TryAddScoped<{project}.Core.Repositories.I{serviceName}Repository, {project}.Infrastructure.Repositories.{serviceName}Repository>();",
+                $"\n",
+            };
+
+            pre = pre.Concat(add);
+            pre = pre.Concat(post);
+
+            try
+            {
+                File.WriteAllText(filepath, string.Join('\n', pre));
+            }
+            catch (System.Exception ex)
+            {
+                OnException(ex);
+                throw new Exception(ex.Message);
+            }
+        }   
+        
+
+        /// <summary>
+        /// inject enumation of the service
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="serviceName"></param>
+        public void CoreEnumerationInject(string filepath, string serviceName){
+            var text = File.ReadAllLines(filepath);
+            int i = Array.IndexOf(text, "        #endregion");
+            var pre = text.Take(i - 1);
+            var post = text.Skip(i-1);
+            string[] add = new string[]{
+                $"\t\t[Description(\"{serviceName} not found\")]",
+                $"\t\t{serviceName.ToUpper()}_NOT_FOUND,",
+                $"\n",
+            };
+
+            pre = pre.Concat(add);
+            pre = pre.Concat(post);
+
+            try
+            {
+                File.WriteAllText(filepath, string.Join('\n', pre));
+            }
+            catch (System.Exception ex)
+            {
+                OnException(ex);
+                throw new Exception(ex.Message);
+            }
         }
 
         
@@ -59,7 +172,7 @@ namespace miccore.Utility{
         public void ServiceNameSpacesImportationForReference(string packageJson, string filepath, string projectName){
             if(!File.Exists(packageJson)){
                 Console.WriteLine("\n\nError: Package file not found\n\n");
-                return;
+                throw new Exception();
             }
 
             var text1 = File.ReadAllText(packageJson);
@@ -70,7 +183,7 @@ namespace miccore.Utility{
             var pre = text.Take(i - 1);
             var post = text.Skip(i-1);
 
-            string companyName = package.CompanyName;
+            string companyName = package.Company;
             string projetName = package.Name;
 
             project.Services.ForEach(serviceName => {
@@ -162,7 +275,7 @@ namespace miccore.Utility{
 
             if(!File.Exists(packageJson)){
                 Console.WriteLine("\n\nError: Package file not found\n\n");
-                return;
+                throw new Exception();
             }
 
             var text1 = File.ReadAllText(packageJson);
@@ -303,19 +416,18 @@ namespace miccore.Utility{
         *
         */
 
-         /**
-        *
-        * start package json project injection
-        *
-        */
-
+        /// <summary>
+        /// start package json project injection
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="projectName"></param>
+        /// <param name="auth"></param>
         public void PackageJsonProjectInject(string filepath, string projectName, bool auth){
-
             if(!File.Exists(filepath)){
-                Console.WriteLine("\n\nError: Package file not found\n\n");
-                return;
+                OutputError("Error: Package file not found");
+                throw new Exception();
             }
-
+            var name = projectName.Split('.')[projectName.Split('.').Length - 1];
             var text = File.ReadAllText(filepath);
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
@@ -331,7 +443,7 @@ namespace miccore.Utility{
             int lasturl = Int32.Parse(package.Projects.ElementAt(i).DockerUrl.Split('.')[3]);
            
             Project project = new Project();
-            project.Name = projectName;
+            project.Name = name;
             project.Port = (lastport + 1).ToString();
             project.DockerUrl =     package.Projects.Last().DockerUrl.Split('.')[0]+'.'+
                                     package.Projects.Last().DockerUrl.Split('.')[1]+'.'+
@@ -339,11 +451,11 @@ namespace miccore.Utility{
                                     (lasturl+1).ToString();
             project.references = new List<string>(){};
             project.Services = new List<string>(){};
-            project.Services.Add(projectName.Split('.')[0]);
-
+            project.Services.Add(name);
+            
+            RenameUtility.Rename($".", "5081", project.Port);
             if(auth){
-                RenameUtility rename = new RenameUtility();
-                rename.Rename($".", "44373", project.Port);
+                project.Services.Add("User");
                 project.Services.Add("Role");
             }
 
@@ -351,7 +463,7 @@ namespace miccore.Utility{
 
             string content = "{\n";
 
-            content += $"\t\"companyName\": \"{package.CompanyName}\",\n";
+            content += $"\t\"company\": \"{package.Company}\",\n";
             content += $"\t\"name\": \"{package.Name}\",\n";
             content += $"\t\"version\": \"{package.Version}\",\n";
             content += $"\t\"projects\": [\n";
@@ -398,7 +510,90 @@ namespace miccore.Utility{
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"ERROR - Failed package json project injection in file: {ex.Message}.");
+                OnException(ex);
+                throw new Exception();
+            }
+            
+        }
+
+
+        public void PackageJsonRemoveProject(string filepath, string projectName){
+
+            if(!File.Exists(filepath)){
+                OutputError("Error: Package file not found");
+                throw new Exception();
+            }
+            var name = projectName.Split('.')[projectName.Split('.').Length - 1];
+            var text = File.ReadAllText(filepath);
+            Package package = JsonConvert.DeserializeObject<Package>(text);
+            
+            // get project
+            var project = package.Projects.Where(x => x.Name == name).FirstOrDefault();
+
+            if(project is null){
+                OutputError("Error: Project not exist");
+                throw new Exception();
+            }
+
+            // check for references
+            var references = package.Projects.Where(x => x.references.Contains(name)).Count();
+            if(references > 0){
+                OutputError("Error: Project is referenced by other projects");
+                throw new Exception();
+            }
+            
+            // remove project
+            package.Projects.Remove(project);
+
+            string content = "{\n";
+
+            content += $"\t\"company\": \"{package.Company}\",\n";
+            content += $"\t\"name\": \"{package.Name}\",\n";
+            content += $"\t\"version\": \"{package.Version}\",\n";
+            content += $"\t\"projects\": [\n";
+
+            package.Projects.ForEach(x => {
+                string refer = "[";
+                x.references.ForEach(y => {
+                    refer += $"\"{y.ToString()}\"";
+                    if(x.references.Last() != y){
+                        refer += ",";
+                    }
+                });
+                refer += "]";
+
+                string serv = "[";
+                x.Services.ForEach(y => {
+                    serv += $"\"{y}\"";
+                    if(x.Services.Last() != y){
+                        serv += ",";
+                    }
+                });
+                serv += "]";
+
+                content += "\t\t{ \n";
+                content += $"\t\t\t\"name\": \"{x.Name}\",\n";
+                content += $"\t\t\t\"port\": \"{x.Port}\",\n";
+                content += $"\t\t\t\"dockerUrl\": \"{x.DockerUrl}\",\n";
+                content += $"\t\t\t\"references\": {refer},\n";
+                content += $"\t\t\t\"services\": {serv}\n";
+                content += "\t\t}";
+
+                if(!package.Projects.Last().Equals(x)){
+                    content += ", \n";
+                }
+            });
+            content += $"\n\t]\n";            
+            content += "}";            
+
+            try
+            {
+                File.WriteAllText(filepath, content);
+            }
+            catch (System.Exception ex)
+            {
+                OnException(ex);
+                throw new Exception();
             }
             
         }
@@ -411,25 +606,18 @@ namespace miccore.Utility{
 
         public void PackageJsonReferenceInject(string filepath, string projectName, string inject){
 
-            if(!File.Exists(filepath)){
-                Console.WriteLine("\n\nError: Package file not found\n\n");
-                return;
-            }
-
             var text = File.ReadAllText(filepath);
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
-            
             Project project = new Project();
-            project = package.Projects.Where(x => x.Name == $"{projectName}.Api").FirstOrDefault();
+            project = package.Projects.Where(x => x.Name == projectName).FirstOrDefault();
             package.Projects.Remove(project);
             project.references.Add(inject.ToLower());
             package.Projects.Add(project);
-            
 
             string content = "{\n";
 
-            content += $"\t\"companyName\": \"{package.CompanyName}\",\n";
+            content += $"\t\"company\": \"{package.Company}\",\n";
             content += $"\t\"name\": \"{package.Name}\",\n";
             content += $"\t\"version\": \"{package.Version}\",\n";
             content += $"\t\"projects\": [\n";
@@ -476,7 +664,8 @@ namespace miccore.Utility{
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"ERROR - Failed package json project injection in file: {ex.Message}.");
+                OnException(ex);
+                throw new Exception($"ERROR - Failed package json project injection in file: {ex.Message}.");
             }
             
         }
@@ -484,17 +673,11 @@ namespace miccore.Utility{
 
         public void PackageJsonReferenceServiceInject(string filepath, string projectName, string inject){
 
-            if(!File.Exists(filepath)){
-                Console.WriteLine("\n\nError: Package file not found\n\n");
-                return;
-            }
-
             var text = File.ReadAllText(filepath);
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
-            
             Project project = new Project();
-            project = package.Projects.Where(x => x.Name == $"{projectName}.Api").FirstOrDefault();
+            project = package.Projects.Where(x => x.Name == projectName).FirstOrDefault();
             package.Projects.Remove(project);
             project.Services.Add(inject);
             package.Projects.Add(project);
@@ -503,7 +686,7 @@ namespace miccore.Utility{
             string content = "{\n";
 
 
-            content += $"\t\"companyName\": \"{package.CompanyName}\",\n";
+            content += $"\t\"company\": \"{package.Company}\",\n";
             content += $"\t\"name\": \"{package.Name}\",\n";
             content += $"\t\"version\": \"{package.Version}\",\n";
             content += $"\t\"projects\": [\n";
@@ -551,7 +734,8 @@ namespace miccore.Utility{
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"ERROR - Failed package json project injection in file: {ex.Message}.");
+                OnException(ex);
+                throw new Exception($"ERROR - Failed package json project injection in file: {ex.Message}.");
             }
             
         }
@@ -567,7 +751,7 @@ namespace miccore.Utility{
 
             if(!File.Exists(filepath)){
                 Console.WriteLine("\n\nError: Ocelot file not found\n\n");
-                return;
+                throw new Exception();
             }
 
             var text = File.ReadAllText("./package.json");
@@ -692,12 +876,17 @@ namespace miccore.Utility{
             }
             
         }
-
-    public void DockerProjectInjection(string filepath, string projectName){
+        
+        /// <summary>
+        /// inject project to docker compose yml
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="projectName"></param>
+        public void DockerProjectInjection(string filepath, string projectName){
 
             if(!File.Exists(filepath)){
                 Console.WriteLine("\n\nError: docker compose file not found\n\n");
-                return;
+                throw new Exception();
             }
 
             var text = File.ReadAllText("./package.json");
@@ -733,11 +922,13 @@ namespace miccore.Utility{
                     dict.container_name = projectName.ToLower();
                     dict.ports.RemoveAt(0);
                     dict.ports.Add(lastport+":"+80);
-                    dict.image = (projectName+".Api").ToLower()+"image:latest";
+                    dict.image = ($"{package.Company}.{package.Name}.{projectName}").ToLower()+".image:latest";
+                    dict.networks = new Network();
+                    dict.networks.static_network = new NetworkItem();
                     dict.networks.static_network.ipv4_address = lasturl;
                     
                     var project = new Project();
-                    project = package.Projects.Where(x => x.Name == $"{projectName}.Api").FirstOrDefault();
+                    project = package.Projects.Where(x => x.Name == $"{projectName}").FirstOrDefault();
                     project.references.ForEach(y => {
                         dict.depends_on.Add(y);
                     });
@@ -752,17 +943,59 @@ namespace miccore.Utility{
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"ERROR - Failed docker project injection in file: {ex.Message}.");
+                OnException(ex);
+                throw new Exception();
             }
             
     }
 
 
-    public void DockerReferenceInjection(string filepath, string projectName){
+        /// <summary>
+        /// remove project to docker compose yml
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="projectName"></param>
+        public void DockerProjectRemove(string filepath, string projectName){
 
             if(!File.Exists(filepath)){
-                Console.WriteLine("\n\nError: docker compose file not found\n\n");
-                return;
+                OutputError("\n\nError: docker compose file not found\n\n");
+                throw new Exception();
+            }
+            try
+            {
+            
+                var deserialise = new YamlDotNet.Serialization.Deserializer();
+                
+                using(var reader = new StreamReader(filepath))
+                {
+                    var obj = deserialise.Deserialize<Dictionary<object, object>>(reader);
+                    var services = (Dictionary<object, object>) obj["services"];
+                    
+                    var project = services[projectName];
+
+                    services.Remove(projectName);
+
+                    obj["services"] = services;
+                    var serializer = new SerializerBuilder().Build();
+                    var yaml = serializer.Serialize(obj);
+
+                    File.WriteAllText(filepath, yaml);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                OnException(ex);
+                throw new Exception();
+            }
+            
+    }
+
+
+        public void DockerReferenceInjection(string filepath, string projectName){
+
+            if(!File.Exists(filepath)){
+                OutputError("Error: docker compose file not found");
+                throw new Exception();
             }
 
             var text = File.ReadAllText("./package.json");
@@ -797,7 +1030,7 @@ namespace miccore.Utility{
 
                    
                     var project = new Project();
-                    project = package.Projects.Where(x => x.Name == $"{projectName}.Api").FirstOrDefault();
+                    project = package.Projects.Where(x => x.Name == $"{projectName}").FirstOrDefault();
                     project.references.ForEach(y => {
                         dict.depends_on.Add(y);
                     });
@@ -812,7 +1045,8 @@ namespace miccore.Utility{
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"ERROR - Failed docker project injection in file: {ex.Message}.");
+                OnException(ex);
+                throw new Exception();
             }
             
     }
@@ -835,7 +1069,7 @@ namespace miccore.Utility{
 
             if(!File.Exists(filepath)){
                 Console.WriteLine("\n\nError: Ocelot file not found\n\n");
-                return;
+                throw new Exception();
             }
 
            
@@ -848,7 +1082,7 @@ namespace miccore.Utility{
                 string content = "{\n";
 
 
-                content += $"\t\"companyName\": \"{package.CompanyName}\",\n";
+                content += $"\t\"companyName\": \"{package.Company}\",\n";
                 content += $"\t\"name\": \"{package.Name}\",\n";
                 content += $"\t\"version\": \"{package.Version}\",\n";
                 content += $"\t\"projects\": [\n";
@@ -962,14 +1196,9 @@ namespace miccore.Utility{
 
           public void OcelotProjectServiceInjection(string packageFile, string filepath, string projectName, string serviceName){
 
-            if(!File.Exists(packageFile)){
-                Console.WriteLine("\n\nError: package file not found\n\n");
-                return;
-            }
-
             if(!File.Exists(filepath)){
-                Console.WriteLine("\n\nError: Ocelot file not found\n\n");
-                return;
+                OutputError("\n\nError: Ocelot file not found\n\n");
+                throw new Exception();
             }
 
             var text = File.ReadAllText(packageFile);
@@ -977,7 +1206,7 @@ namespace miccore.Utility{
             
             int lastport = Int32.Parse(
                                     package.Projects
-                                            .Where(x => x.Name == $"{projectName}.Api")
+                                            .Where(x => x.Name == projectName)
                                             .First()
                                             .Port
                                     );
@@ -1075,7 +1304,8 @@ namespace miccore.Utility{
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"ERROR - Failed ocelot project service injection in file: {ex.Message}.");
+                OnException(ex);
+                throw new Exception($"ERROR - Failed ocelot project service injection in file: {ex.Message}.");
             }
             
         }
@@ -1105,7 +1335,7 @@ namespace miccore.Utility{
                 process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
 
                 if(Directory.Exists("./dist")){
@@ -1134,14 +1364,14 @@ namespace miccore.Utility{
                         process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
                         
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
 
                         var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
@@ -1161,14 +1391,14 @@ namespace miccore.Utility{
                         process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
                         
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
 
                         var file = $"./start-{x.Name.ToLower().Split('.')[0]}.sh";
@@ -1195,17 +1425,27 @@ namespace miccore.Utility{
             
         }
 
-        
-        public void DockerFilesCreationAndInject(string packageFile)
+        /// <summary>
+        /// build solution with docker
+        /// </summary>
+        /// <param name="packageFile"></param>
+        /// <param name="cmd"></param>
+        public void DockerFilesCreationAndInject(string packageFile, string cmd)
         {
-
+            var process = new Process();
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.RedirectStandardOutput = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
             try
             {
+                
                 var text = File.ReadAllText(packageFile);
                 Package package = JsonConvert.DeserializeObject<Package>(text);
-                var ocelotText = File.ReadAllText("./Gateway.WebApi/ocelot.json");
+                var prefix = $"{package.Company}.{package.Name}";
+                var ocelotText = File.ReadAllText($"./{prefix}.Gateway.WebApi/ocelot.json");
                 Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
-
+                
                 // create dist file
                 if (Directory.Exists("./dist"))
                 {
@@ -1218,228 +1458,108 @@ namespace miccore.Utility{
 
                     directory.Delete(true);
                 }
-
                 Directory.CreateDirectory("./dist");
 
-
-                // build solution
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                Console.WriteLine($" Ocelot docker file generation ...\n");
-                Console.WriteLine($" \n******************************************************************************************** \n");
-
-                package.Projects.ForEach(x =>
+                // generate ocelot file
+                OutputToConsole($"Ocelot file generation ...");
+                
+                package.Projects.Where(x => x.Name != "Gateway.WebApi").ToList().ForEach(x =>
                 {
 
-                    var routes = ocelot.Routes.Where(y => y.DownstreamHostAndPorts[0].Port.ToString() == x.Port)
-                                            .ToList();
-                    foreach (var item in routes)
-                    {
-                        item.DownstreamHostAndPorts[0].Host = x.DockerUrl.ToString();
-                        item.DownstreamHostAndPorts[0].Port = 80;
-                    }
-                    var name = x.Name.Split('.')[0] + 's';
-                    var conf = ocelot.SwaggerEndPoints.Where(y => y.Key == name).FirstOrDefault();
-                    if (conf != null)
-                    {
-                        conf.Config[0].Url = $"http://{x.DockerUrl}:80/swagger/v1/swagger.json";
-                    }
+                    var ocelotProject = File.ReadAllText($"./{prefix}.{x.Name}/configuration.json");
+                    Ocelot config = JsonConvert.DeserializeObject<Ocelot>(ocelotProject);
 
+                    if(cmd == "build"){
+                        var routes = config.Routes.ToList();
+                        foreach (var item in routes)
+                        {
+                            item.DownstreamHostAndPorts[0].Host = x.DockerUrl.ToString();
+                            item.DownstreamHostAndPorts[0].Port = 80;
+                        }
+                        var name = x.Name + 's';
+                        var conf = ocelot.SwaggerEndPoints.Where(y => y.Key == name).FirstOrDefault();
+                        if (conf != null)
+                        {
+                            conf.Config[0].Url = $"http://{x.DockerUrl}:80/swagger/v1/swagger.json";
+                        }
+                    }
+                    ocelot.Routes.AddRange(config.Routes);
+                    ocelot.SwaggerEndPoints.AddRange(config.SwaggerEndPoints);
                 });
-                OcelotFileWrite(ocelot, "./Gateway.WebApi/ocelot.docker.json");
+                OcelotFileWrite(ocelot, $"./{prefix}.Gateway.WebApi/ocelot.json");
 
 
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                Console.WriteLine($" building of the solution\n");
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                var process1 = Process.Start("dotnet", "build");
-                process1.WaitForExit();
-                if (process1.ExitCode != 0)
+                // build the solution
+                OutputToConsole($"Build the solution\n");
+                process.StartInfo.FileName = "dotnet";
+                process.StartInfo.Arguments = $"build";
+                process.Start();
+                process.WaitForExit();
+                if (process.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    OutputError(process.StandardError.ReadToEnd());
+                    throw new Exception(process.StandardError.ReadToEnd());
                 }
 
+                //Build images
                 //string of sh file
                 string bash = "#!/bin/bash \n\n\n";
-
                 package.Projects.ForEach(x =>
                 {
 
                     if (x.Name == "Gateway.WebApi")
                     {
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        Console.WriteLine($" building of {x.Name}\n");
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}.csproj");
-                        process1.WaitForExit();
-                if (process1.ExitCode != 0)
-                {
-                    throw new Exception(process1.StandardError.ReadLine());
-                }
-                        if (process1.ExitCode != 0)
-                        {
-                            throw new Exception(process1.StandardError.ReadLine());
-                        }
+                        // restore
+                        restoreGateway($"{prefix}.{x.Name}", process);
+                       
                         // publish
-                        process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}.csproj -c Release");
-                        process1.WaitForExit();
-                if (process1.ExitCode != 0)
-                {
-                    throw new Exception(process1.StandardError.ReadLine());
-                }
-                        if (process1.ExitCode != 0)
-                        {
-                            throw new Exception(process1.StandardError.ReadLine());
-                        }
-
-                        // build image
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        Console.WriteLine($" Building {x.Name} Image ...\n");
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        process1 = Process.Start("docker", $"build ./{x.Name} -t {x.Name.ToLower()}.image -f ./{x.Name}/Dockerfile.{x.Name.Split('.')[0]}");
-                        process1.WaitForExit();
-                if (process1.ExitCode != 0)
-                {
-                    throw new Exception(process1.StandardError.ReadLine());
-                }
-                        if (process1.ExitCode != 0)
-                        {
-                            throw new Exception(process1.StandardError.ReadLine());
-                        }
-
-                        // save image in tar file
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        Console.WriteLine($" Saving {x.Name} Image  ...\n");
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        process1 = Process.Start("docker", $"save --output ./dist/{x.Name.ToLower()}.image.tar {x.Name.ToLower()}.image");
-                        process1.WaitForExit();
-                if (process1.ExitCode != 0)
-                {
-                    throw new Exception(process1.StandardError.ReadLine());
-                }
-                        if (process1.ExitCode != 0)
-                        {
-                            throw new Exception(process1.StandardError.ReadLine());
-                        }
-
-                        // add from bash
-                        bash += $"# load {x.Name} Image \n";
-                        bash += $"docker load --input {x.Name.ToLower()}.image.tar\n\n";
+                        publishGateway($"{prefix}.{x.Name}", process);
 
                     }
                     else
                     {
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        Console.WriteLine($" building of {x.Name}\n");
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        var process1 = Process.Start("dotnet", $"restore ./{x.Name}/{x.Name}/{x.Name}.csproj");
-                        process1.WaitForExit();
-                if (process1.ExitCode != 0)
-                {
-                    throw new Exception(process1.StandardError.ReadLine());
-                }
-                        if (process1.ExitCode != 0)
-                        {
-                            throw new Exception(process1.StandardError.ReadLine());
-                        }
-                        // publish image
-                        process1 = Process.Start("dotnet", $"publish ./{x.Name}/{x.Name}/{x.Name}.csproj -c Release");
-                        process1.WaitForExit();
-                if (process1.ExitCode != 0)
-                {
-                    throw new Exception(process1.StandardError.ReadLine());
-                }
-                        if (process1.ExitCode != 0)
-                        {
-                            throw new Exception(process1.StandardError.ReadLine());
-                        }
-
-                        // build image
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        Console.WriteLine($" Building {x.Name} Image ...\n");
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        process1 = Process.Start("docker", $"build ./{x.Name} -t {x.Name.ToLower()}.image -f ./{x.Name}/Dockerfile.{x.Name.Split('.')[0]}");
-                        process1.WaitForExit();
-                if (process1.ExitCode != 0)
-                {
-                    throw new Exception(process1.StandardError.ReadLine());
-                }
-                        if (process1.ExitCode != 0)
-                        {
-                            throw new Exception(process1.StandardError.ReadLine());
-                        }
-
-                        // save image in tar file
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        Console.WriteLine($" Saving {x.Name} Image ...\n");
-                        Console.WriteLine($" \n******************************************************************************************** \n");
-                        process1 = Process.Start("docker", $"save --output ./dist/{x.Name.ToLower()}.image.tar {x.Name.ToLower()}.image");
-                        process1.WaitForExit();
-                if (process1.ExitCode != 0)
-                {
-                    throw new Exception(process1.StandardError.ReadLine());
-                }
-                        if (process1.ExitCode != 0)
-                        {
-                            throw new Exception(process1.StandardError.ReadLine());
-                        }
-
-                        // add from bash
-                        bash += $"# load {x.Name} Image \n";
-                        bash += $"docker load --input {x.Name.ToLower()}.image.tar\n\n";
+                        // restore
+                        restoreProject($"{prefix}.{x.Name}", process);
+                       
+                        // publish
+                        publishProject($"{prefix}.{x.Name}", process);
 
                     }
 
+                     // build image
+                    buildImage($"{prefix}.{x.Name}", process);
+                    
+                    // save image in tar file
+                    saveImage($"{prefix}.{x.Name}", process);
+
+                    // add from bash
+                    bash += $"# load {x.Name} Image \n";
+                    bash += $"docker load --input {prefix.ToLower()}.{x.Name.ToLower()}.image.tar\n\n";
+
                 });
 
-                // build migration image
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                Console.WriteLine($" Building Migrations Image ...\n");
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                var process = Process.Start("docker", $"build . -t migration.image -f Dockerfile.Migration");
-                process.WaitForExit();
-                if (process.ExitCode != 0)
-                {
-                    throw new Exception(process.StandardError.ReadLine());
-                }
-
-                // save image in tar file
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                Console.WriteLine($" Saving Migration Image ...\n");
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                process = Process.Start("docker", $"save --output ./dist/migration.image.tar migration.image");
-                process.WaitForExit();
-                if (process.ExitCode != 0)
-                {
-                    throw new Exception(process.StandardError.ReadLine());
-                }
-
                 // copy docker compose file to dist
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                Console.WriteLine($" Saving docker compose ...\n");
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                process = Process.Start("cp", $"docker-compose.yml ./dist/docker-compose.yml");
+                OutputToConsole($"Save docker compose ...");
+                process.StartInfo.FileName = "cp";
+                process.StartInfo.Arguments = $"docker-compose.yml ./dist/docker-compose.yml";
+                process.Start();
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                 {
-                    throw new Exception(process.StandardError.ReadLine());
+                    OutputError(process.StandardError.ReadToEnd());
+                    throw new Exception(process.StandardError.ReadToEnd());
                 }
-
-                
-                // add from bash
-                bash += $"# load Migration Image \n";
-                bash += $"docker load --input migration.image.tar\n\n\n";
 
                 // write bash file
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                Console.WriteLine($" generate docker load sh fie ...\n");
-                Console.WriteLine($" \n******************************************************************************************** \n");
+                OutputToConsole($"Generate docker image load sh filee ...");
                 var startfile = $"./dist/load-images.sh";
                 File.WriteAllText(startfile, bash);
 
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"ERROR - Failed sh file builder in file: {ex.Message}.");
+                OnException(ex);
+                OutputError($"ERROR - Failed Build: {ex.Message}.");
                 throw new Exception(ex.Message);
             }
 
@@ -1498,7 +1618,7 @@ namespace miccore.Utility{
                 process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
 
                 Directory.SetCurrentDirectory(OutFolder);
@@ -1513,14 +1633,14 @@ namespace miccore.Utility{
                         process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
                         
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
 
                         var content = $"FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build\n";
@@ -1538,14 +1658,14 @@ namespace miccore.Utility{
                         process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
                         
                         process1 = Process.Start("dotnet", $"publish ../{x.Name}/{x.Name}/{x.Name}.csproj -c Release -o ./{x.Name}");
                         process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
 
                         var content = $"FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build\n";
@@ -1649,7 +1769,9 @@ namespace miccore.Utility{
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"ERROR - Failed ocelot project service injection in file: {ex.Message}.");
+                OnException(ex);
+                OutputError($"ERROR - Failed ocelot project service injection in file: {ex.Message}.");
+                throw new Exception(ex.Message);
             }
         }
 
@@ -1666,7 +1788,7 @@ namespace miccore.Utility{
                 process1.WaitForExit();
                 if (process1.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    throw new Exception(process1.StandardError.ReadToEnd());
                 }
 
 

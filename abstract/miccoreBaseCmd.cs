@@ -14,19 +14,11 @@ namespace miccore
     [HelpOption("--help | -h | -?")]
     abstract class miccoreBaseCmd{
 
-        
-        protected readonly string _template_url = "https://github.com/miccore/templates.git";
-        protected readonly string _source_with_auth = "template/micro-dotnet-with-auth-v3-next";
-        protected readonly string _source_with_auth_sqlserver = "template/micro-dotnet-with-auth-v3-sqlserver-next";
-        protected readonly string _source_without_auth = "template/micro-dotnet-without-auth-v3-next";
-        protected readonly string _source_user_microservice = "template/user.microservice-v3";
-        protected readonly string _source_user_microservice_sqlserver = "template/user.microservice-v3-sqlserver";
-        protected readonly string _source_sample_microservice = "template/sample.microservice-v3";
-        protected readonly string _source_sample_microservice_sqlserver = "template/sample.microservice-v3-sqlserver";
-        protected readonly string _source_samples_services = "template/samples-services-v3";
-        protected readonly string _source_xamarin = "template/xamarin";
-
-
+        protected readonly string _clean_sample = "https://github.com/miccore/clean-architecture-sample.git";
+        protected readonly string _clean_auth = "https://github.com/miccore/clean-architecture-auth.git";
+        protected readonly string _clean_project = "https://github.com/miccore/clean-architecture-project.git";
+        protected readonly string _clean_items = "https://github.com/miccore/clean-architecture-items.git";
+       
         protected ILogger _logger;  
         protected IConsole _console;
 
@@ -35,129 +27,147 @@ namespace miccore
             return Task.FromResult(0);
         }
 
-        /**
-        * output exception
-        */
+        /// <summary>
+        /// output exception
+        /// </summary>
+        /// <param name="ex"></param>
         protected void OnException(Exception ex)
         {
-            OutputError($"\n{ex.Message}\n\n");
+            // Console.WriteLine(ex.Message);
             _logger.LogError(ex.Message);
-            _logger.LogDebug(ex, ex.Message);
+            _logger.LogTrace(ex, ex.Message);
         }
 
-        /**
-        * output error
-        */
+        /// <summary>
+        /// output error
+        /// </summary>
+        /// <param name="message"></param>
         protected void OutputError(string message)
         {
-            _console.BackgroundColor = ConsoleColor.Red;
-            _console.ForegroundColor = ConsoleColor.White;
-            _console.Error.WriteLine(message);
-            _console.ResetColor();
+            // Console.WriteLine(message);
+            _logger.LogError(message);
         }
 
-        /**
-        * output data to console
-        */
+       /// <summary>
+       /// output data to console
+       /// </summary>
+       /// <param name="data"></param>
         protected void OutputToConsole(string data)
         {
-            _console.BackgroundColor = ConsoleColor.Black;
-            _console.ForegroundColor = ConsoleColor.White;
-            _console.Out.Write(data);
-            _console.ResetColor();
+            // Console.WriteLine(data);
+           _logger.LogInformation(data);
         }
 
-        /**
-        * run a clone of project, build and reinitialize the git remote
-        */
+        /// <summary>
+        /// run a clone of project, build and reinitialize the git remote
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="source"></param>
         protected void runClone(string name, string source){
            
-            var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
+            var process1 = new Process();
+            process1.StartInfo.FileName = "git";
+            process1.StartInfo.Arguments = $"clone {source} {name}";
+            process1.StartInfo.RedirectStandardError = true;
+            process1.StartInfo.RedirectStandardOutput = false;
+            process1.StartInfo.CreateNoWindow = true;
+            process1.StartInfo.UseShellExecute = false;
+            process1.Start();
             process1.WaitForExit();
             if (process1.ExitCode != 0)
-            {
-                throw new Exception(process1.StandardError.ReadLine());
+            {   
+                OutputError(process1.StandardError.ReadToEnd());
+                throw new Exception(process1.StandardError.ReadToEnd());
             }
             
-            OutputToConsole($" \n******************************************************************************************** \n");
-            OutputToConsole($" building of the solution\n");
-            OutputToConsole($" \n******************************************************************************************** \n");
+            OutputToConsole($"building of the solution");
 
             Directory.SetCurrentDirectory($"./{name}/");
-            process1 = Process.Start("dotnet", "build");
-            process1.WaitForExit();
-            if (process1.ExitCode != 0)
-            {
-                throw new Exception(process1.StandardError.ReadLine());
-            }
 
-
-            OutputToConsole($" \n******************************************************************************************** \n");
-            OutputToConsole($" git initialization \n");
-            OutputToConsole($" \n******************************************************************************************** \n\n");
-
+            OutputToConsole($"git initialization");
             deleteFolder("./.git/");
 
-            process1 = Process.Start("git", "init");
+            process1.StartInfo.FileName = "git";
+            process1.StartInfo.Arguments = $"init";
+            process1.Start();
             process1.WaitForExit();
             if (process1.ExitCode != 0)
             {
-                throw new Exception(process1.StandardError.ReadLine());
+                OutputError(process1.StandardError.ReadToEnd());
+                throw new Exception(process1.StandardError.ReadToEnd());
             }
-            process1 = Process.Start("git", "branch -m master main");
+
+            process1.StartInfo.FileName = "git";
+            process1.StartInfo.Arguments = $"branch -m master main";
+            process1.Start();
             process1.WaitForExit();
             if (process1.ExitCode != 0)
-            {
-                throw new Exception(process1.StandardError.ReadLine());
+            {   
+                OutputError(process1.StandardError.ReadToEnd());
+                throw new Exception(process1.StandardError.ReadToEnd());
             }
             
             
         }
 
+        /// <summary>
+        /// run a clone of project, build and reinitialise git repository
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="source"></param>
          protected void runCloneProject(string name, string source){
-           
-            var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
+            var process1 = new Process();
+            process1.StartInfo.FileName = "git";
+            process1.StartInfo.Arguments = $"clone {source} {name}";
+            process1.StartInfo.RedirectStandardError = true;
+            process1.StartInfo.RedirectStandardOutput = false;
+            process1.StartInfo.CreateNoWindow = true;
+            process1.StartInfo.UseShellExecute = false;
+            process1.Start();
             process1.WaitForExit();
             if (process1.ExitCode != 0)
             {
-                throw new Exception(process1.StandardError.ReadLine());
+                OutputError(process1.StandardError.ReadToEnd());
+                throw new Exception(process1.StandardError.ReadToEnd());
             }
             
-            OutputToConsole($" \n******************************************************************************************** \n");
-            OutputToConsole($" building of the solution\n");
-            OutputToConsole($" \n******************************************************************************************** \n");
-
+            OutputToConsole($"building of the solution");
+            
             Directory.SetCurrentDirectory($"./{name}/");
-            process1 = Process.Start("dotnet", "build");
-            process1.WaitForExit();
-            if (process1.ExitCode != 0)
-            {
-                throw new Exception(process1.StandardError.ReadLine());
-            }
-
+            
             deleteFolder("./.git/");
             
         }
 
 
-        /**
-        * run a clone of project
-        */
+        /// <summary>
+        /// run a clone of project
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="source"></param>
         protected void runOnlyClone(string name, string source){
-           
-            var process1 = Process.Start("git", $"clone -b {source} {_template_url} {name} ");
+            var process1 = new Process();
+            process1.StartInfo.FileName = "git";
+            process1.StartInfo.Arguments = $"clone {source} {name}";
+            process1.StartInfo.RedirectStandardError = true;
+            process1.StartInfo.RedirectStandardOutput = false;
+            process1.StartInfo.CreateNoWindow = true;
+            process1.StartInfo.UseShellExecute = false;
+            process1.Start();
             process1.WaitForExit();
             if (process1.ExitCode != 0)
             {
-                throw new Exception(process1.StandardError.ReadLine());
+                OutputError(process1.StandardError.ReadToEnd());
+                throw new Exception(process1.StandardError.ReadToEnd());
             }
             
         }
 
 
-        /**
-        * delete folder
-        */
+        /// <summary>
+        /// delete folder
+        /// </summary>
+        /// <param name="path"></param>
         protected void deleteFolder(string path){
 
             var directory = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
@@ -172,9 +182,10 @@ namespace miccore
         }
 
 
-        /**
-        * set attribute of a folder as normal
-        */
+        /// <summary>
+        /// set attribute of a folder as normal
+        /// </summary>
+        /// <param name="path"></param>
         protected void setNormalFolder(string path){
 
             var directory = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
@@ -187,9 +198,12 @@ namespace miccore
         }
 
 
-        /**
-        * copy directory
-        */
+        /// <summary>
+        /// copy directory to another 
+        /// </summary>
+        /// <param name="sourceDirName"></param>
+        /// <param name="destDirName"></param>
+        /// <param name="copySubDirs"></param>
         protected void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
         {
             // Get the subdirectories for the specified directory.
@@ -197,6 +211,8 @@ namespace miccore
 
             if (!dir.Exists)
             {
+                OutputError("Source directory does not exist or could not be found: "
+                    + sourceDirName);
                 throw new DirectoryNotFoundException(
                     "Source directory does not exist or could not be found: "
                     + sourceDirName);
@@ -204,8 +220,10 @@ namespace miccore
 
             DirectoryInfo[] dirs = dir.GetDirectories();
             
-            // If the destination directory doesn't exist, create it.       
-            Directory.CreateDirectory(destDirName);        
+            // If the destination directory doesn't exist, create it. 
+            if(!Directory.Exists(destDirName)){
+                Directory.CreateDirectory(destDirName);
+            }     
 
             // Get the files in the directory and copy them to the new location.
             FileInfo[] files = dir.GetFiles();
@@ -229,31 +247,147 @@ namespace miccore
 
         }
 
-        /**
-        * change mode of a file
-        */
+        /// <summary>
+        /// change file mod
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="permissions"></param>
+        /// <param name="recursive"></param>
+        /// <returns></returns>
         protected bool Chmod(string filePath, string permissions = "700", bool recursive = false)
         {
-                string cmd;
-                if (recursive)
-                    cmd = $"chmod -R {permissions} {filePath}";
-                else
-                    cmd = $"chmod {permissions} {filePath}";
+            string cmd =$"chmod {permissions} {filePath}";
 
-                try
-                {
-                    using (Process proc = Process.Start("/bin/bash", $"-c \"{cmd}\""))
-                    {
-                        proc.WaitForExit();
-                        return proc.ExitCode == 0;
-                    }
-                }
-                catch
-                {
-                    return false;
-                }
+            if (recursive)
+                cmd = $"chmod -R {permissions} {filePath}";
+
+            try
+            {
+                var process1 = new Process();
+                process1.StartInfo.FileName = "/bin/bas";
+                process1.StartInfo.Arguments = $"-c \"{cmd}\"";
+                process1.StartInfo.RedirectStandardError = true;
+                process1.StartInfo.RedirectStandardOutput = false;
+                process1.StartInfo.CreateNoWindow = true;
+                process1.StartInfo.UseShellExecute = false;
+                process1.Start();
+                process1.WaitForExit();
+                return process1.ExitCode == 0;
+            }
+            catch (Exception e)
+            {
+                OnException(e);
+                throw new Exception(e.Message);
+            }
         }
 
+        /// <summary>
+        /// build project
+        /// </summary>
+        /// <param name="ProjectName"></param>
+        /// <param name="process"></param>
+        protected void restoreProject(string ProjectName, Process process){
+            OutputToConsole($"restore {ProjectName.Split('.').Last()}");
+            process.StartInfo.FileName = "dotnet";
+            process.StartInfo.Arguments = $"restore ./{ProjectName}/src/{ProjectName}.Api/{ProjectName}.Api.csproj";
+            process.Start();
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                OutputError(process.StandardError.ReadToEnd());
+                throw new Exception(process.StandardError.ReadToEnd());
+            }
+        }
+
+        /// <summary>
+        /// restore gateway
+        /// </summary>
+        /// <param name="ProjectName"></param>
+        /// <param name="process"></param>
+        protected void restoreGateway(string ProjectName, Process process){
+            OutputToConsole($"restore {ProjectName.Split('.').Last()}");
+            process.StartInfo.FileName = "dotnet";
+            process.StartInfo.Arguments = $"restore ./{ProjectName}/{ProjectName}.csproj";
+            process.Start();
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                OutputError(process.StandardError.ReadToEnd());
+                throw new Exception(process.StandardError.ReadToEnd());
+            }
+        }
+
+        /// <summary>
+        /// publish gateway
+        /// </summary>
+        /// <param name="ProjectName"></param>
+        /// <param name="process"></param>
+        protected void publishGateway(string ProjectName, Process process){
+            OutputToConsole($"publish {ProjectName.Split('.').Last()}");
+            process.StartInfo.FileName = "dotnet";
+            process.StartInfo.Arguments = $"publish ./{ProjectName}/{ProjectName}.csproj -c Release";
+            process.Start();
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                OutputError(process.StandardError.ReadToEnd());
+                throw new Exception(process.StandardError.ReadToEnd());
+            }
+        }
+
+        /// <summary>
+        /// publish project
+        /// </summary>
+        /// <param name="ProjectName"></param>
+        /// <param name="process"></param>
+        protected void publishProject(string ProjectName, Process process){
+            OutputToConsole($"Publish {ProjectName.Split('.').Last()}");
+            process.StartInfo.FileName = "dotnet";
+            process.StartInfo.Arguments = $"publish ./{ProjectName}/src/{ProjectName}.Api/{ProjectName}.Api.csproj -c Release";
+            process.Start();
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                OutputError(process.StandardError.ReadToEnd());
+                throw new Exception(process.StandardError.ReadToEnd());
+            }
+        }
+
+        /// <summary>
+        /// build docker image
+        /// </summary>
+        /// <param name="ProjectName"></param>
+        /// <param name="process"></param>
+        protected void buildImage(string ProjectName, Process process){
+            OutputToConsole($"Build {ProjectName.Split('.').Last()} Docker Image");
+            process.StartInfo.FileName = "docker";
+            process.StartInfo.Arguments = $"build -q ./{ProjectName} -t {ProjectName.ToLower()}.image";
+            process.Start();
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                // OutputError(process.StandardError.ReadToEnd());
+                throw new Exception(process.StandardError.ReadToEnd());
+            }
+        }
+
+        /// <summary>
+        /// save docker image
+        /// </summary>
+        /// <param name="ProjectName"></param>
+        /// <param name="process"></param>
+        protected void saveImage(string ProjectName, Process process){
+            OutputToConsole($"Save {ProjectName.Split('.').Last()} Docker Image");
+            process.StartInfo.FileName = "docker";
+            process.StartInfo.Arguments = $"save --output ./dist/{ProjectName.ToLower()}.image.tar {ProjectName.ToLower()}.image";
+            process.Start();
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                // OutputError(process.StandardError.ReadToEnd());
+                throw new Exception(process.StandardError.ReadToEnd());
+            }
+        }
     }
 
 

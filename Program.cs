@@ -31,6 +31,7 @@ namespace miccore
                     services.AddLogging(config =>
                     {
                         config.ClearProviders();
+                        config.AddConsole();
                         config.AddProvider(new SerilogLoggerProvider(Log.Logger));
                     });
                     // services.AddHttpClient();

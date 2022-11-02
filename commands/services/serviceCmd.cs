@@ -31,106 +31,149 @@ namespace miccore.service
 
         protected override Task<int> OnExecute(CommandLineApplication app)
         {
+            var process = new Process();
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.RedirectStandardOutput = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
             try
             {
+                 // check if package json file exist
+                if(!File.Exists("./package.json")){
+                    OutputError("Error: Package file not found");
+                    return Task.FromResult(1);
+                }
+
+                // get the company name to the package json file
+                var text = File.ReadAllText("./package.json");
+                Package package = JsonConvert.DeserializeObject<Package>(text);
+               
+                // company name
+                string companyName = package.Company;
+                string projectName = package.Name;
+                // check if it's microservice webapi solution
+                if(!File.Exists($"./{companyName}.{projectName}.sln")){
+                    // return error if not
+                    OutputError("Microservice solution not found, go to the general project");
+                    return Task.FromResult(1);
+                }
+                
                 if(string.IsNullOrEmpty(_project)){
-                    OutputError($"\n project name option is required to execute this command, provide project name\n\n");
+                    OutputError($"Project name option is required to execute this command, provide project name");
                     return Task.FromResult(1);
                 }
 
                 if(string.IsNullOrEmpty(_name)){
-                    OutputError($"\n name option is required to execute this command, provide name\n\n");
+                    OutputError($"Name option is required to execute this command, provide name");
                     return Task.FromResult(1);
                 }
 
-                if(!Directory.Exists($"./{_project}.Api")){
-                    OutputError($"\nProject {_project} doesn't exist, choose and existing project and don't write the name with the mention .Api\n\n");
+                if(!Directory.Exists($"./{companyName}.{projectName}.{_project}")){
+                    OutputError($"Project {companyName}.{projectName}.{_project} doesn't exist, choose and existing project and don't write the name with the mention");
                     return Task.FromResult(1);
                 }
-
-                // check if package json file exist
-                if(!File.Exists("./package.json")){
-                    OutputError("\n\nError: Package file not found\n\n");
-                    return Task.FromResult(1);
-                }
-                // get the company name to the package json file
-                var text = File.ReadAllText("./package.json");
-                Package package = JsonConvert.DeserializeObject<Package>(text);
-                // company name
-                string companyName = package.CompanyName;
-                // project name
-                string projectName = package.Name;
                 
                 _name = char.ToUpper(_name[0]) + _name.Substring(1).ToLower();
                 var current = Path.GetFullPath(".");
                 var temp = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
-                var name = temp + "/" + _name;
+                var name = temp + "/" + _name + (DateTime.Now.ToUniversalTime() - new DateTime (1970, 1, 1)).TotalSeconds;
 
-                // Directory.CreateDirectory(name);
                 Directory.SetCurrentDirectory(temp);
+                // if(Directory.Exists(name)){
+                //     deleteFolder(name);
+                // }
+                Directory.CreateDirectory(name);
 
-                OutputToConsole($" \n******************************************************************************************** \n");
-                OutputToConsole($"   add new service with name {_name} to {_project} project ... \n");
-                OutputToConsole($" \n******************************************************************************************** \n\n");
-                runOnlyClone(_name, _source_samples_services);
+                OutputToConsole($"Add new service with name {_name} to {_project} project ... \n");
+                runOnlyClone(name, _clean_items);
 
+                // set folder as normal 
                 setNormalFolder(name);
-    
-                DirectoryCopy($"{name}/samples-operation", $"{current}/{_project}.Api/{_project}.Api/Operations/{_name}", true);
-                // rename.Rename($"{current}/{_project}.Api", "samples-operation", _name);
 
-                DirectoryCopy($"{name}/samples-service", $"{current}/{_project}.Api/{_project}.Api/Services/{_name}", true);
-                // rename.Rename($"{current}/{_project}.Api", "samples-service", _name);
+                //copy of different elements
+                var proj = $"{companyName}.{projectName}.{_project}";
+                var path = $"{current}/{companyName}.{projectName}.{_project}/src";
+                // Api controller
+                OutputToConsole($"Generate Api Controller \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Api/Controllers", $"{path}/{proj}.Api/Controllers", true);
+                // Api validators
+                OutputToConsole($"Generate Api Validators \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Api/Validators", $"{path}/{proj}.Api/Validators", true);
+                // Application Commands
+                OutputToConsole($"Generate Application Commands \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Application/Commands", $"{path}/{proj}.Application/Commands", true);
+                // Application Handlers
+                OutputToConsole($"Generate Application Handlers \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Application/Handlers", $"{path}/{proj}.Application/Handlers", true);
+                // Application Mappers
+                OutputToConsole($"Generate Application Mappers \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Application/Mappers", $"{path}/{proj}.Application/Mappers", true);
+                // Application Queries
+                OutputToConsole($"Generate Application Queries \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Application/Queries", $"{path}/{proj}.Application/Queries", true);
+                // Application Responses
+                OutputToConsole($"Generate Application Responses \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Application/Responses", $"{path}/{proj}.Application/Responses", true);
+                // core Entities
+                OutputToConsole($"Generate core Entities \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Core/Entities", $"{path}/{proj}.Core/Entities", true);
+                // core Repositories
+                OutputToConsole($"Generate core Repositories \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Core/Repositories", $"{path}/{proj}.Core/Repositories", true);
+                // Infrastructure Repositories
+                OutputToConsole($"Generate Infrastructure Repositories \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Infrastructure/Repositories", $"{path}/{proj}.Infrastructure/Repositories", true);
 
-                DirectoryCopy($"{name}/samples-repository", $"{current}/{_project}.Api/{_project}.Api/Repositories/{_name}", true);
-                // rename.Rename($"{current}/{_project}.Api", "samples-repository", _name);
+                OutputToConsole($"Renaming samples \n");
+                Directory.SetCurrentDirectory(current);
+                // rename company name by default for the real company name
+                RenameUtility.Rename($"./{proj}/", "Miccore.CleanArchitecture.Sample", proj);
+                // rename database context name
+                RenameUtility.Rename($"./{proj}/", "SampleApplicationDbContext", $"{_project}ApplicationDbContext");
+                // RenameUtility.Rename($"{_name}/", "Sample.Core", $"{_project}.Core");
+                RenameUtility.Rename($"./{proj}/", "Sample", _name);
+                // Update Enumeration 
+                RenameUtility.Rename($"./{proj}/", "SAMPLE", _name.ToUpper());
+                // update to lower
+                RenameUtility.Rename($"./{proj}/", "sample", _name.ToLower());
 
-                RenameUtility rename = new RenameUtility();
-                rename.Rename($"{current}/{_project}.Api", "Miccore.Net", companyName);
-                rename.Rename($"{current}/{_project}.Api", "webapi_template", projectName);
-                rename.Rename($"{current}/{_project}.Api", "Sample", _name);
-                rename.Rename($"{current}/{_project}.Api", "sample",  char.ToLower(_name[0]) + _name.Substring(1).ToLower());
-                rename.Rename($"{current}/{_project}.Api", $"{_name}.Api", $"{_project}.Api");
+                // injection 
+                OutputToConsole($"Dependencies injections ... \n");
+                InjectionUtility injection = new InjectionUtility(_logger);
+                // core enumeration
+                OutputToConsole($"Core Enumeration injections \n");
+                injection.CoreEnumerationInject($"{path}/{proj}.Core/Enumerations/ExceptionEnum.cs", _name);
 
+                // infrastructure dbcontext injection
+                OutputToConsole($"Infrastructure db context injections \n");
+                injection.InfrastructureDbContextInject($"{path}/{proj}.Infrastructure/Data/{_project}ApplicationDbContext.cs", proj, _name);
 
-                OutputToConsole($" \n******************************************************************************************** \n");
-                OutputToConsole($"   dependencies injections ... \n");
-                OutputToConsole($" \n******************************************************************************************** \n\n");
+                // infrastructure service injection
+                OutputToConsole($"Infrastructure service injections \n");
+                injection.InfrastructureServiceInject($"{path}/{proj}.Infrastructure/Persistances/DependencyInjection.cs", proj, _name);
 
-                InjectionUtility injection = new InjectionUtility();
-                OutputToConsole($"   services and repositories injections ... \n");
-                injection.ServiceNameSpacesImportation($"{current}/{_project}.Api/{_project}.Api/Services/Services.cs", $"{companyName}.{projectName}.{_project}.Api", _name);
-                injection.ServiceRepositoryServicesInjection($"{current}/{_project}.Api/{_project}.Api/Services/Services.cs", _name);
-                injection.ServiceProfileAdding($"{current}/{_project}.Api/{_project}.Api/Services/Services.cs", _name);
-                
-                OutputToConsole($"   DBContext model creations ... \n");
-                injection.DBContextNameSpacesImportation($"{current}/{_project}.Api/{_project}.Api/Data/IApplicationDbContext.cs", $"{companyName}.{projectName}.{_project}.Api", _name);
-                injection.DBContextIApplicationInjection($"{current}/{_project}.Api/{_project}.Api/Data/IApplicationDbContext.cs",  _name);
-
-                injection.DBContextNameSpacesImportation($"{current}/{_project}.Api/{_project}.Api/Data/ApplicationDbContext.cs", $"{companyName}.{projectName}.{_project}.Api", _name);
-                injection.DBContextApplicationInjection($"{current}/{_project}.Api/{_project}.Api/Data/ApplicationDbContext.cs",  _name);
-                
-                
-                OutputToConsole($"   ocelot project service injection ... \n");
-                injection.OcelotProjectServiceInjection($"{current}/package.json",$"{current}/Gateway.WebApi/ocelot.json", _project, _name);
-
-
-                OutputToConsole($"   package json service injection ... \n");
+                // Package json service injection
+                OutputToConsole($"Package json service injection ... \n");
                 injection.PackageJsonReferenceServiceInject($"{current}/package.json", _project, _name);
 
+                // ocelot project service injection
+                OutputToConsole($"Ocelot project service injection ... \n");
+                injection.OcelotProjectServiceInjection($"{current}/package.json",$"{current}/{proj}/configuration.json", _project, _name);
 
-                OutputToConsole($" \n******************************************************************************************** \n");
-                OutputToConsole($"   solution building ... \n");
-                OutputToConsole($" \n******************************************************************************************** \n\n");
-
+                // delete temp file
                 Directory.SetCurrentDirectory(current);
                 deleteFolder(name);
 
-                var process1 = Process.Start("dotnet", "build");
-                process1.WaitForExit();
-                if (process1.ExitCode != 0)
+                // build solution
+                OutputToConsole($"Build Solution \n");
+                process.StartInfo.FileName = "dotnet";
+                process.StartInfo.Arguments = $"build";
+                process.Start();
+                process.WaitForExit();
+                if (process.ExitCode != 0)
                 {
-                    throw new Exception(process1.StandardError.ReadLine());
+                    OutputError(process.StandardError.ReadToEnd());
+                    throw new Exception(process.StandardError.ReadToEnd());
                 }
                 
                 return Task.FromResult(0);

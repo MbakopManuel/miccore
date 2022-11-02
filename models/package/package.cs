@@ -4,7 +4,7 @@ namespace miccore.Models
 {
     class Package
     {
-        public string CompanyName {get; set;}
+        public string Company {get; set;}
         public string Name {get; set;}
         public string Version {get; set;}
         public List<Project> Projects {get; set;}

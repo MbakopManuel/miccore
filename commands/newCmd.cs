@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using miccore.Utility;
@@ -10,11 +12,11 @@ namespace miccore
     class newCmd : miccoreBaseCmd
     {
 
-        [Option("--with-auth | -wa",
-                Description = "create a project with authentication or not, if specified your project will be created with an authentication microservice and otherwise it will be created with a sample microservice called sample",
-                ShowInHelpText = true
-                )]
-        public bool _auth {get;}
+        // [Option("--with-auth | -wa",
+        //         Description = "create a project with authentication or not, if specified your project will be created with an authentication microservice and otherwise it will be created with a sample microservice called sample",
+        //         ShowInHelpText = true
+        //         )]
+        // public bool _auth {get;}
 
         [Option(" --name | -n",
                 CommandOptionType.SingleValue,
@@ -28,18 +30,6 @@ namespace miccore
                 ShowInHelpText = true)]
         public string _companyName {get; set; }
 
-        [Option(" --project | -p",
-                CommandOptionType.SingleValue,
-                Description = "The type of project, we have two types (webapi or xamarin). default: webapi",
-                ShowInHelpText = true)]
-        public string _project {get; set; }
-
-        [Option(" --server | -s",
-                CommandOptionType.SingleValue,
-                Description = "The type of database server, we have two types (mysql or sqlserver). default: mysql",
-                ShowInHelpText = true)]
-        public string _server {get; set; }
-
         public newCmd(ILogger<newCmd> logger, IConsole console){
             _logger = logger;
             _console = console;
@@ -47,113 +37,41 @@ namespace miccore
 
         protected override Task<int> OnExecute(CommandLineApplication app)
         {
-
             // create a new project
-            RenameUtility rename = new RenameUtility();
+            var process = new Process();
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.RedirectStandardOutput = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
             try
             {
-                // check if  project type is not empty
-                if(string.IsNullOrEmpty(_project)){
-                    // if it is, set project type to webapi by default
-                    _project = "webapi";
-                    // set the default name to MiccroserviceWebApi
-                    _name = "MiccoreWebApi";
-                    // if with want integrate in the project auth packages
-                    if(_auth){
-                        // create auth micro service webapi project            
-                        OutputToConsole($" \n******************************************************************************************** \n");
-                        OutputToConsole($" {_project} project creation with authentication with name {_name} ...\n");
-                        OutputToConsole($" \n******************************************************************************************** \n\n");
-                        // cloning the template from github
-                        switch (_server)
-                        {
-                            case "sqlserver":
-                                runClone(_name, _source_with_auth_sqlserver);
-                            break;
-                            default:
-                                runClone(_name, _source_with_auth);
-                            break;
-                        }
-                        
-                        rename.Rename($"./", "webapi_template", _name);
-                        if(!string.IsNullOrEmpty(_companyName)) rename.Rename($"./", "Miccore.Net", _companyName);
+                // set the default name to MiccroserviceWebApi
+                if(string.IsNullOrEmpty(_name)) _name = "MiccoreWebApi";
 
-                        return Task.FromResult(0);
-
-                    }
-                    // create a simple microservice webapi without auth
-                    OutputToConsole($" \n******************************************************************************************** \n");
-                    OutputToConsole($" {_project} project without authentication with name {_name} ...\n");
-                    OutputToConsole($" \n******************************************************************************************** \n\n");
-                    // cloning the template from github
-                    runClone(_name, _source_without_auth); 
-                    rename.Rename($"./", "webapi_template", _name);
-                    if(!string.IsNullOrEmpty(_companyName)) rename.Rename($"./", "Miccore.Net", _companyName);
-
-                    return Task.FromResult(0);
-
-                }
-
-                // check the project type
-                switch (_project)
-                {
-                    // if it is webapi
-                    case "webapi":
-                        // check if the name is empty and set the default name if it's
-                        if(string.IsNullOrEmpty(_name)){
-                            _name = "MiccoreWebApi";
-                        }    
-
-                        // if with want integrate in the project auth packages
-                        if(_auth){
-                            // create auth micro service webapi project  
-                            OutputToConsole($" \n******************************************************************************************** \n");
-                            OutputToConsole($" {_project} project creation with authentication with name {_name} ...\n");
-                            OutputToConsole($" \n******************************************************************************************** \n\n");
-                            // cloning the template from github
-                            switch (_server)
-                            {
-                                case "sqlserver":
-                                    runClone(_name, _source_with_auth_sqlserver);
-                                break;
-                                default:
-                                    runClone(_name, _source_with_auth);
-                                break;
-                            }
-                            // rename in the project webapi_template by the name of project
-                            rename.Rename($"./", "webapi_template", _name);
-                            if(!string.IsNullOrEmpty(_companyName)) rename.Rename($"./", "Miccore.Net", _companyName);
-                            break;
-
-                        }
-                        // create a simple microservice webapi without auth
-                        OutputToConsole($" \n******************************************************************************************** \n");
-                        OutputToConsole($" {_project} project without authentication with name {_name} ...\n");
-                        OutputToConsole($" \n******************************************************************************************** \n\n");
-                        runClone(_name, _source_without_auth);
-                        // rename in the project webapi_template by the name of project
-                        rename.Rename($"./", "webapi_template", _name);
-                        if(!string.IsNullOrEmpty(_companyName)) rename.Rename($"./", "Miccore.Net", _companyName);
-
-                    break;
-                    // by default create xamarin project if it's not webapi
-                    default:
-                        // check if the name is empty and set the default name if it's
-                        if(string.IsNullOrEmpty(_name)){
-                            _name = "MiccoreXamarinMobileApp";
-                        }
-                         // create xamarin project
-                        OutputToConsole($" \n******************************************************************************************** \n");
-                        OutputToConsole($" {_project} project creation with name {_name} ... \n");
-                        OutputToConsole($" \n******************************************************************************************** \n\n");
-                        // cloning the template from github
-                        runClone(_name, _source_xamarin);
-                    
-                    break;
-                }
-                return Task.FromResult(0);
-
+                // create a simple microservice webapi without auth
+                OutputToConsole($"Clean Architecture Miccore Webapi Project {_name} ...");
                 
+                // cloning the template from github
+                runClone(_name, _clean_project); 
+                RenameUtility.Rename($"./", "CleanArchitecture", _name);
+                RenameUtility.Rename($"./", "cleanarchitecture", _name.ToLower());
+                if(!string.IsNullOrEmpty(_companyName)){
+                     RenameUtility.Rename($"./", "Miccore", _companyName);
+                     RenameUtility.Rename($"./", "miccore", _companyName.ToLower());
+                }
+
+                // build project
+                process.StartInfo.FileName = "dotnet";
+                process.StartInfo.Arguments = "build";
+                process.Start();
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    OutputError(process.StandardError.ReadToEnd());
+                    throw new Exception(process.StandardError.ReadToEnd());
+                }
+
+                return Task.FromResult(0);
             }
             catch (Exception ex)
             {

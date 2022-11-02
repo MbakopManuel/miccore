@@ -6,15 +6,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace miccore.Utility{
-    class RenameUtility{
+    static class RenameUtility{
 
-        public RenameUtility(){
 
-        }
-
-        public void Rename(string projectPath, string oldName,string newName)
+        /// <summary>
+        /// rename recursively in folder
+        /// </summary>
+        /// <param name="projectPath"></param>
+        /// <param name="oldName"></param>
+        /// <param name="newName"></param>
+        public static void Rename(string projectPath, string oldName,string newName)
         {
         
             var ignoreExts = new List<string>();
@@ -22,8 +26,14 @@ namespace miccore.Utility{
             Renamer(projectPath, oldName, newName, ignoreExts);
         }
 
-        
-        protected void Renamer(string source, string search, string replace, ICollection<string> ignoreExts)
+        /// <summary>
+        /// renamer
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="search"></param>
+        /// <param name="replace"></param>
+        /// <param name="ignoreExts"></param>
+        public static void Renamer(string source, string search, string replace, ICollection<string> ignoreExts)
         {
             var files = Directory.GetFiles(source);
 
@@ -66,9 +76,17 @@ namespace miccore.Utility{
             }
         }
 
-        protected void ReplaceFolderName(string search, string replace, string subdirectory, int folderNameIdx, string folderName)
+        /// <summary>
+        /// replace folder name
+        /// </summary>
+        /// <param name="search"></param>
+        /// <param name="replace"></param>
+        /// <param name="subdirectory"></param>
+        /// <param name="folderNameIdx"></param>
+        /// <param name="folderName"></param>
+        public static void ReplaceFolderName(string search, string replace, string subdirectory, int folderNameIdx, string folderName)
         {
-            Console.WriteLine($"Replacing {search} with {replace} in folder name: {folderName}");
+            Log.Information($"Replacing {search} with {replace} in folder name: {folderName}");
 
             var newDirectory = subdirectory.Substring(0, folderNameIdx) +
                                folderName.Replace(search, replace, StringComparison.OrdinalIgnoreCase);
@@ -79,13 +97,21 @@ namespace miccore.Utility{
             }
             catch
             {
-                Console.WriteLine($"ERROR - Failed to rename folder: {subdirectory}.");
+                Log.Error($"ERROR - Failed to rename folder: {subdirectory}.");
             }
         }
-
-        protected void ReplaceFileName(string search, string replace, string filename, string filepath, int fileindex)
+        
+        /// <summary>
+        /// replace file name
+        /// </summary>
+        /// <param name="search"></param>
+        /// <param name="replace"></param>
+        /// <param name="filename"></param>
+        /// <param name="filepath"></param>
+        /// <param name="fileindex"></param>
+        public static void ReplaceFileName(string search, string replace, string filename, string filepath, int fileindex)
         {
-            Console.WriteLine($"Replacing {search} with {replace} in file name: {filepath}");
+            Log.Information($"Replacing {search} with {replace} in file name: {filepath}");
 
             var startIndex = filename.IndexOf(search, StringComparison.OrdinalIgnoreCase);
             var endIndex = startIndex + search.Length;
@@ -102,17 +128,24 @@ namespace miccore.Utility{
             }
             catch
             {
-                Console.WriteLine($"ERROR - Failed to rename file: {filepath}.");
+                Log.Error($"ERROR - Failed to rename file: {filepath}.");
             }
         }
 
-        protected static void ReplaceFileText(string search, string replace, string filepath, ICollection<string> ignoreExts)
+        /// <summary>
+        /// replace file text
+        /// </summary>
+        /// <param name="search"></param>
+        /// <param name="replace"></param>
+        /// <param name="filepath"></param>
+        /// <param name="ignoreExts"></param>
+        public static void ReplaceFileText(string search, string replace, string filepath, ICollection<string> ignoreExts)
         {
             var text = File.ReadAllText(filepath);
             var ext = filepath.Split(".").Last();
             if (ignoreExts.Contains(ext) || !text.Contains(search)) return;
 
-            Console.WriteLine($"Replacing {search} with {replace} in file: {filepath}");
+            Log.Information($"Replacing {search} with {replace} in file: {filepath}");
 
             text = text.Replace(search, replace);
             try
@@ -121,7 +154,7 @@ namespace miccore.Utility{
             }
             catch
             {
-                Console.WriteLine($"ERROR - Failed to replace text in file: {filepath}.");
+                Log.Error($"ERROR - Failed to replace text in file: {filepath}.");
             }
         }
 

@@ -21,49 +21,94 @@ namespace miccore
                 ShowInHelpText = true
                 )]
         public string _dotnet {get;}
+
+        [Option("--project | -p",
+                Description = "if mentionned, migration of only one project",
+                ShowInHelpText = true
+                )]
+        public string _project {get;}
         
-        public migrateCmd(ILogger<newCmd> logger, IConsole console){
+        public migrateCmd(ILogger<migrateCmd> logger, IConsole console){
             _logger = logger;
             _console = console;
         }
 
         protected override Task<int> OnExecute(CommandLineApplication app)
         {
-
+            var process = new Process();
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.RedirectStandardOutput = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
             // Run all migrations 
             try
             {
-                // check if it's a dotnet core solution
-                if(!File.Exists("./Microservice.WebApi.sln")){
-                    // if it's not a dotnet core solution, return error
-                    OutputError("microservice solution not found.\ngo to the general project");
-                    return Task.FromResult(1);
-                }
-
-                // check if package.json exist in the project
+                 // check if package json file exist
                 if(!File.Exists("./package.json")){
-                    // if not return error
-                    OutputError("breaking project, package.json file doesn't exist\n");
+                    OutputError("Error: Package file not found");
+                    return Task.FromResult(1);
+                }
+                
+                // get the company name to the package json file
+                var text = File.ReadAllText("./package.json");
+                Package package = JsonConvert.DeserializeObject<Package>(text);
+               
+                // company name
+                string companyName = package.Company;
+                string projectName = package.Name;
+                // check if it's microservice webapi solution
+                if(!File.Exists($"./{companyName}.{projectName}.sln")){
+                    // return error if not
+                    OutputError("Error: Microservice solution not found, go to the general project");
                     return Task.FromResult(1);
                 }
 
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                Console.WriteLine($" building of the solution\n");
-                Console.WriteLine($" \n******************************************************************************************** \n");
-                var process1 = Process.Start("dotnet", "build");
-                process1.WaitForExit();
+                
+                OutputToConsole($"Build the solution");
+                process.StartInfo.FileName = "dotnet";
+                process.StartInfo.Arguments = $"build";
+                process.Start();
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    OutputError(process.StandardError.ReadToEnd());
+                    throw new Exception(process.StandardError.ReadToEnd());
+                }
+
+                // get dotnet ef command, if it's passed in parameter or is installed globally
+                var exec = (string.IsNullOrEmpty(_dotnet)) ? "dotnet-ef" :  _dotnet;
+
+                if(string.IsNullOrEmpty(_project)){
+                    var project = package.Projects.Find(x => x.Name == _project);
+                    if(project is null){
+                        OutputError("Error: Project not found");
+                        return Task.FromResult(1);
+                    }
+
+                    var name = $"{companyName}.{projectName}.{_project}";
+                    OutputToConsole($"{name} migration ... ");
+                    // set current directory to project directory
+                    Directory.SetCurrentDirectory($"./{name}/src/{name}.Api");
+                    process.StartInfo.FileName = exec;
+                    process.StartInfo.Arguments = $"databse update";
+                    process.Start();
+                    process.WaitForExit();
+                    if (process.ExitCode != 0)
+                    {
+                        OutputError(process.StandardError.ReadToEnd());
+                        throw new Exception(process.StandardError.ReadToEnd());
+                    }
+                    return Task.FromResult(0);
+                }
+
+
 
                 // dependency tree variable
                 List<string> schedule = new List<string>();
 
-                // read the package json file
-                var text = File.ReadAllText("./package.json");
-                Package package = JsonConvert.DeserializeObject<Package>(text);
-
                 // create dependency tree
-                OutputToConsole($" \n******************************************************************************************** \n");
-                OutputToConsole($"   Dependency tree creation ... \n");
-                OutputToConsole($" \n******************************************************************************************** \n\n");
+                OutputToConsole($"Dependency tree creation ... ");
+                
                 var projets = package.Projects;
                 projets.ForEach(projet => {
                     var name = projet.Name.Split(".")[0].ToLower();
@@ -96,24 +141,22 @@ namespace miccore
                 // get full path of the solution
                 var current = Path.GetFullPath(".");
 
-                // get dotnet ef command, if it's passed in parameter or is installed globally
-                var exec = (string.IsNullOrEmpty(_dotnet)) ? "dotnet-ef" :  _dotnet;
                 // foreach project in the dependency tree, run migrations
                 schedule.ForEach( x => {
                     // name of the project
-                    var name = $"{x[0].ToString().ToUpper()}{x.Substring(1)}.Api";
-
-                    OutputToConsole($" \n******************************************************************************************** \n");
-                    OutputToConsole($"   {name} migration ... \n");
-                    OutputToConsole($" \n******************************************************************************************** \n\n");
+                    var name = $"{package.Company}.{package.Name}.{x}";
+                    OutputToConsole($"{name} migration ... ");
                     // set current directory to project directory
-                    Directory.SetCurrentDirectory($"{current}/{name}/{name}");
+                    Directory.SetCurrentDirectory($"{current}/{name}/src/{name}.Api");
                     // run the dotnet ef databse update command
-                    var process = Process.Start(exec, "database update");
+                    process.StartInfo.FileName = exec;
+                    process.StartInfo.Arguments = $"databse update";
+                    process.Start();
                     process.WaitForExit();
                     if (process.ExitCode != 0)
                     {
-                        throw new Exception(process.StandardError.ReadLine());
+                        OutputError(process.StandardError.ReadToEnd());
+                        throw new Exception(process.StandardError.ReadToEnd());
                     }
                 });
 
@@ -125,7 +168,5 @@ namespace miccore
                 return Task.FromResult(1);
             }
         }
-
-
     }
 }
