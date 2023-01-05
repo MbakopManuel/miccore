@@ -90,7 +90,7 @@ namespace miccore.project
                     runCloneProject(_name, _clean_auth);
 
                     // rename elements 
-                    OutputToConsole($"Renaming ... ");
+                    // OutputToConsole($"Renaming ... ");
                     Directory.SetCurrentDirectory($"../");
                     
                     // // rename user by the name of project
@@ -104,14 +104,16 @@ namespace miccore.project
                     // clone the project
                     OutputToConsole($"Add microservice without authentication with name {_name} ... ");
                     runCloneProject(_name, _clean_sample);
-                    
-                    // rename the elements
-                    OutputToConsole($"Renaming ... ");
                     Directory.SetCurrentDirectory($"../");
-                    
-                    RenameUtility.Rename($"{_name}/", "Sample", name);
-                    RenameUtility.Rename($"{_name}/", "SAMPLE", name.ToUpper());
-                    RenameUtility.Rename($"./{_name}/", "sample",  char.ToLower(name[0]) + name.Substring(1).ToLower());
+                    // rename  the elements
+                    OutputToConsole($"Renaming ... ");
+                    // rename Project
+                    RenameUtility.Rename($"./{_name}/", "Sample", name);
+                    RenameUtility.Rename($"./{_name}/", "Sample", name);
+                    // Update Enumeration 
+                    RenameUtility.Rename($"./{_name}/", "SAMPLE", name.ToUpper());
+                    // update to lower
+                    RenameUtility.Rename($"./{_name}/", "sample", name.ToLower());
 
                 }
 
