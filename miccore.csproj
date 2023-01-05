@@ -4,7 +4,7 @@
 		<TargetFrameworks>net5.0;net6.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<AssemblyName>miccore</AssemblyName>
-		<Version>3.0.2</Version>
+		<Version>4.0.0</Version>
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackAsTool>true</PackAsTool>
@@ -13,13 +13,11 @@
 		<PackageOutputPath>./miccore-nupkg</PackageOutputPath>
 		<Authors>Manher</Authors>
 		<Description>
-		Note: this version add docker build files and redefine docker-compose elements 
-
-        Tool for dotnet core webapi microservice architecture creation and management or for xamarin project creation.
+        Tool for dotnet core webapi microservice clean architecture creation and management.
 
         this version is for NET CORE 6.0, check read me for all the features.
     </Description>
-		<PackageTags>Microservice, dotnet core 6.0, dotnet core 5.0,  .net core, xamarin, miccore.net, Miccore.Net, ocelot, mysql</PackageTags>
+		<PackageTags>Microservice, dotnet core 6.0, dotnet core 5.0,  .net core, miccore.net, Miccore.Net, ocelot, mysql, Clean architecture, Clean, architecture</PackageTags>
 		<RepositoryUrl>https://github.com/MbakopManuel/miccore/tree/main-v3</RepositoryUrl>
 	</PropertyGroup>
 	<ItemGroup>
