@@ -93,6 +93,7 @@ namespace miccore.service
                 //copy of different elements
                 var proj = $"{companyName}.{projectName}.{_project}";
                 var path = $"{current}/{companyName}.{projectName}.{_project}/src";
+                var test = $"{current}/{companyName}.{projectName}.{_project}/tests";
                 // Api controller
                 OutputToConsole($"Generate Api Controller \n");
                 DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Api/Controllers", $"{path}/{proj}.Api/Controllers", true);
@@ -123,6 +124,9 @@ namespace miccore.service
                 // Infrastructure Repositories
                 OutputToConsole($"Generate Infrastructure Repositories \n");
                 DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.Infrastructure/Repositories", $"{path}/{proj}.Infrastructure/Repositories", true);
+                // unit test
+                OutputToConsole($"Generate unit test \n");
+                DirectoryCopy($"{name}/Miccore.CleanArchitecture.Sample.UnitTest/Sample", $"{test}/{proj}.UnitTest/Sample", true);
 
                 OutputToConsole($"Renaming samples \n");
                 Directory.SetCurrentDirectory(current);

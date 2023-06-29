@@ -388,6 +388,35 @@ namespace miccore
                 throw new Exception(process.StandardError.ReadToEnd());
             }
         }
+
+        /// <summary>
+        /// save docker image
+        /// </summary>
+        /// <param name="ProjectName"></param>
+        /// <param name="process"></param>
+        protected void buildAndSaveMigrationImage(string ProjectName, Process process){
+            OutputToConsole($"Build Migration Docker Image");
+            process.StartInfo.FileName = "docker";
+            process.StartInfo.Arguments = $"build -q . -t {ProjectName.ToLower()}.migration.image";
+            process.Start();
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                // OutputError(process.StandardError.ReadToEnd());
+                throw new Exception(process.StandardError.ReadToEnd());
+            }
+
+            OutputToConsole($"Save Migration Docker Image");
+            process.StartInfo.FileName = "docker";
+            process.StartInfo.Arguments = $"save --output ./dist/{ProjectName.ToLower()}.migration.image.tar {ProjectName.ToLower()}.migration.image";
+            process.Start();
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                // OutputError(process.StandardError.ReadToEnd());
+                throw new Exception(process.StandardError.ReadToEnd());
+            }
+        }
     }
 
 

@@ -892,16 +892,9 @@ namespace miccore.Utility{
             var text = File.ReadAllText("./package.json");
             Package package = JsonConvert.DeserializeObject<Package>(text);
             
-            int lastport = int.Parse(package.Projects.First().Port);
-            int i = 0;
-            foreach (var item in package.Projects)
-            {
-                if(lastport < int.Parse(item.Port)){
-                    lastport = int.Parse(item.Port);
-                    i++;
-                }
-            }
-            string lasturl = package.Projects.ElementAt(i).DockerUrl;
+            var pack = package.Projects.Where(x => x.Name == projectName).First();
+            int lastport = int.Parse(pack.Port);
+            string lasturl = pack.DockerUrl;
             
             var deserialise = new YamlDotNet.Serialization.Deserializer();
 
@@ -918,7 +911,7 @@ namespace miccore.Utility{
                     
                     ServiceItem dict = new ServiceItem();
                     dict = JsonConvert.DeserializeObject<ServiceItem>(json);
-
+                     Console.WriteLine("\n\narrive ici 1\n\n");
                     dict.container_name = projectName.ToLower();
                     dict.ports.RemoveAt(0);
                     dict.ports.Add(lastport+":"+80);
@@ -927,17 +920,20 @@ namespace miccore.Utility{
                     dict.networks.static_network = new NetworkItem();
                     dict.networks.static_network.ipv4_address = lasturl;
                     
+                     Console.WriteLine("\n\narrive ici 2\n\n");
                     var project = new Project();
                     project = package.Projects.Where(x => x.Name == $"{projectName}").FirstOrDefault();
                     project.references.ForEach(y => {
                         dict.depends_on.Add(y);
                     });
 
+                     Console.WriteLine("\n\narrive ici 3\n\n");
                     services[projectName.ToLower()] = dict; 
                     obj["services"] = services;
                     var serializer = new SerializerBuilder().Build();
                     var yaml = serializer.Serialize(obj);
 
+                     Console.WriteLine("\n\narrive ici 4\n\n");
                     File.WriteAllText(filepath, yaml);
                 }
             }
@@ -1445,6 +1441,8 @@ namespace miccore.Utility{
                 var prefix = $"{package.Company}.{package.Name}";
                 var ocelotText = File.ReadAllText($"./{prefix}.Gateway.WebApi/ocelot.json");
                 Ocelot ocelot = JsonConvert.DeserializeObject<Ocelot>(ocelotText);
+                ocelot.Routes = new List<OcelotObject>();
+                ocelot.SwaggerEndPoints = new List<SwaggerEndPointObject>();
                 
                 // create dist file
                 if (Directory.Exists("./dist"))
@@ -1537,6 +1535,15 @@ namespace miccore.Utility{
                     bash += $"docker load --input {prefix.ToLower()}.{x.Name.ToLower()}.image.tar\n\n";
 
                 });
+
+                if(File.Exists("./Dockerfile")){
+                    // build migration file
+                    buildAndSaveMigrationImage($"{prefix}", process);
+
+                    // add from bash
+                    bash += $"# load Migration Image \n";
+                    bash += $"docker load --input {prefix.ToLower()}.migration.image.tar\n\n";
+                }
 
                 // copy docker compose file to dist
                 OutputToConsole($"Save docker compose ...");

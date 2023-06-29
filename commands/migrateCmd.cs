@@ -76,9 +76,9 @@ namespace miccore
                 }
 
                 // get dotnet ef command, if it's passed in parameter or is installed globally
-                var exec = (string.IsNullOrEmpty(_dotnet)) ? "dotnet-ef" :  _dotnet;
+                var exec = (string.IsNullOrEmpty(_dotnet)) ? "dotnet" :  _dotnet;
 
-                if(string.IsNullOrEmpty(_project)){
+                if(!string.IsNullOrEmpty(_project)){
                     var project = package.Projects.Find(x => x.Name == _project);
                     if(project is null){
                         OutputError("Error: Project not found");
@@ -88,9 +88,12 @@ namespace miccore
                     var name = $"{companyName}.{projectName}.{_project}";
                     OutputToConsole($"{name} migration ... ");
                     // set current directory to project directory
-                    Directory.SetCurrentDirectory($"./{name}/src/{name}.Api");
+                    // Directory.SetCurrentDirectory($"./{name}/src/{name}.Api");
                     process.StartInfo.FileName = exec;
-                    process.StartInfo.Arguments = $"databse update";
+                    if(exec.Contains('-'))
+                        process.StartInfo.Arguments = $"database update --project ./{name}/src/{name}.Api/{name}.Api.csproj";
+                    else
+                        process.StartInfo.Arguments = $"ef database update --project ./{name}/src/{name}.Api/{name}.Api.csproj";
                     process.Start();
                     process.WaitForExit();
                     if (process.ExitCode != 0)
@@ -147,10 +150,13 @@ namespace miccore
                     var name = $"{package.Company}.{package.Name}.{x}";
                     OutputToConsole($"{name} migration ... ");
                     // set current directory to project directory
-                    Directory.SetCurrentDirectory($"{current}/{name}/src/{name}.Api");
+                    // Directory.SetCurrentDirectory($"{current}/{name}/src/{name}.Api");
                     // run the dotnet ef databse update command
                     process.StartInfo.FileName = exec;
-                    process.StartInfo.Arguments = $"databse update";
+                    if(exec.Contains('-'))
+                        process.StartInfo.Arguments = $"database update  --project ./{name}/src/{name}.Api/{name}.Api.csproj";
+                    else
+                        process.StartInfo.Arguments = $"ef database update  --project ./{name}/src/{name}.Api/{name}.Api.csproj";
                     process.Start();
                     process.WaitForExit();
                     if (process.ExitCode != 0)
