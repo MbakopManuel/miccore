@@ -441,17 +441,19 @@ namespace miccore.Utility{
                 }
             }
             int lasturl = Int32.Parse(package.Projects.ElementAt(i).DockerUrl.Split('.')[3]);
-           
-            Project project = new Project();
-            project.Name = name;
-            project.Port = (lastport + 1).ToString();
-            project.DockerUrl =     package.Projects.Last().DockerUrl.Split('.')[0]+'.'+
-                                    package.Projects.Last().DockerUrl.Split('.')[1]+'.'+
-                                    package.Projects.Last().DockerUrl.Split('.')[2]+'.'+
-                                    (lasturl+1).ToString();
-            project.references = new List<string>(){};
-            project.Services = new List<string>(){};
-            project.Services.Add(name);
+
+            Project project = new Project
+            {
+                Name = name,
+                Port = (lastport + 1).ToString(),
+                DockerUrl = package.Projects.Last().DockerUrl.Split('.')[0] + '.' +
+                                    package.Projects.Last().DockerUrl.Split('.')[1] + '.' +
+                                    package.Projects.Last().DockerUrl.Split('.')[2] + '.' +
+                                    (lasturl + 1).ToString(),
+                references = new List<string>() { },
+                Services = new List<string>() { name },
+                Context = name+ "ApplicationDbContext"
+            };
             
             RenameUtility.Rename($".", "5081", project.Port);
             if(auth){
@@ -494,7 +496,8 @@ namespace miccore.Utility{
                 content += $"\t\t\t\"port\": \"{x.Port}\",\n";
                 content += $"\t\t\t\"dockerUrl\": \"{x.DockerUrl}\",\n";
                 content += $"\t\t\t\"references\": {refer},\n";
-                content += $"\t\t\t\"services\": {serv}\n";
+                content += $"\t\t\t\"services\": {serv},\n";
+                content += $"\t\t\t\"context\": \"{x.Context}\"\n";
                 content += "\t\t}";
 
                 if(!package.Projects.Last().Equals(x)){
@@ -648,7 +651,8 @@ namespace miccore.Utility{
                 content += $"\t\t\t\"port\": \"{x.Port}\",\n";
                 content += $"\t\t\t\"dockerUrl\": \"{x.DockerUrl}\",\n";
                 content += $"\t\t\t\"references\": {refer},\n";
-                content += $"\t\t\t\"services\": {serv}\n";
+                content += $"\t\t\t\"services\": {serv},\n";
+                content += $"\t\t\t\"context\": \"{x.Context}\"\n";
                 content += "\t\t}";
 
                 if(!package.Projects.Last().Equals(x)){
@@ -718,7 +722,8 @@ namespace miccore.Utility{
                 content += $"\t\t\t\"port\": \"{x.Port}\",\n";
                 content += $"\t\t\t\"dockerUrl\": \"{x.DockerUrl}\",\n";
                 content += $"\t\t\t\"references\": {refer},\n";
-                content += $"\t\t\t\"services\": {serv}\n";
+                content += $"\t\t\t\"services\": {serv},\n";
+                content += $"\t\t\t\"context\": \"{x.Context}\"\n";
                 content += "\t\t}";
 
                 if(!package.Projects.Last().Equals(x)){
@@ -911,29 +916,27 @@ namespace miccore.Utility{
                     
                     ServiceItem dict = new ServiceItem();
                     dict = JsonConvert.DeserializeObject<ServiceItem>(json);
-                     Console.WriteLine("\n\narrive ici 1\n\n");
                     dict.container_name = projectName.ToLower();
                     dict.ports.RemoveAt(0);
                     dict.ports.Add(lastport+":"+80);
-                    dict.image = ($"{package.Company}.{package.Name}.{projectName}").ToLower()+".image:latest";
-                    dict.networks = new Network();
-                    dict.networks.static_network = new NetworkItem();
+                    dict.image = $"{package.Company}.{package.Name}.{projectName}".ToLower()+".image:latest";
+                    dict.networks = new Network
+                    {
+                        static_network = new NetworkItem()
+                    };
                     dict.networks.static_network.ipv4_address = lasturl;
                     
-                     Console.WriteLine("\n\narrive ici 2\n\n");
                     var project = new Project();
                     project = package.Projects.Where(x => x.Name == $"{projectName}").FirstOrDefault();
                     project.references.ForEach(y => {
                         dict.depends_on.Add(y);
                     });
 
-                     Console.WriteLine("\n\narrive ici 3\n\n");
                     services[projectName.ToLower()] = dict; 
                     obj["services"] = services;
                     var serializer = new SerializerBuilder().Build();
                     var yaml = serializer.Serialize(obj);
 
-                     Console.WriteLine("\n\narrive ici 4\n\n");
                     File.WriteAllText(filepath, yaml);
                 }
             }
@@ -1471,11 +1474,11 @@ namespace miccore.Utility{
                         var routes = config.Routes.ToList();
                         foreach (var item in routes)
                         {
-                            item.DownstreamHostAndPorts[0].Host = x.DockerUrl.ToString();
+                            item.DownstreamHostAndPorts[0].Host = x.DockerUrl;
                             item.DownstreamHostAndPorts[0].Port = 80;
                         }
                         var name = x.Name + 's';
-                        var conf = ocelot.SwaggerEndPoints.Where(y => y.Key == name).FirstOrDefault();
+                        var conf = config.SwaggerEndPoints.Where(y => y.Key == name).FirstOrDefault();
                         if (conf != null)
                         {
                             conf.Config[0].Url = $"http://{x.DockerUrl}:80/swagger/v1/swagger.json";
@@ -1558,7 +1561,7 @@ namespace miccore.Utility{
                 }
 
                 // write bash file
-                OutputToConsole($"Generate docker image load sh filee ...");
+                OutputToConsole($"Generate docker image load sh file ...");
                 var startfile = $"./dist/load-images.sh";
                 File.WriteAllText(startfile, bash);
 

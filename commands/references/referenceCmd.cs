@@ -73,8 +73,6 @@ namespace miccore.reference
                 }
                
                 OutputToConsole($"Reference adding ...");
-                var from = $"{companyName}.{projectName}.{_from}/src/{companyName}.{projectName}.{_from}.Api/{companyName}.{projectName}.{_from}.Api.csproj";
-                var to = $"{companyName}.{projectName}.{_to}/src/{companyName}.{projectName}.{_to}.Api/{companyName}.{projectName}.{_to}.Api.csproj";
                 
                 if(!Directory.Exists($"./{companyName}.{projectName}.{_from}")){
                     OutputError($"\nProject {companyName}.{projectName}.{_from} doesn't exist, choose and existing project and don't write the name with the mention\n\n");
@@ -86,14 +84,29 @@ namespace miccore.reference
                     return Task.FromResult(1);
                 }
 
-                process.StartInfo.FileName = "dotnet";
-                process.StartInfo.Arguments = $"add {to} reference {from}";
-                process.Start();
-                process.WaitForExit();
-                if (process.ExitCode != 0)
+                var to = $"{companyName}.{projectName}.{_to}/src/{companyName}.{projectName}.{_to}.Api/{companyName}.{projectName}.{_to}.Api.csproj";
+
+                var projets = new []{
+                    "Api",
+                    "Application",
+                    "Core",
+                    "Infrastructure"
+                };
+
+                foreach (var item in projets)
                 {
-                    throw new Exception(process.StandardError.ReadToEnd());
+                    var from = $"{companyName}.{projectName}.{_from}/src/{companyName}.{projectName}.{_from}.{item}/{companyName}.{projectName}.{_from}.{item}.csproj";
+                   
+                    process.StartInfo.FileName = "dotnet";
+                    process.StartInfo.Arguments = $"add {to} reference {from}";
+                    process.Start();
+                    process.WaitForExit();
+                    if (process.ExitCode != 0)
+                    {
+                        throw new Exception(process.StandardError.ReadToEnd());
+                    }
                 }
+                
 
                 InjectionUtility injection = new InjectionUtility(_logger);
 

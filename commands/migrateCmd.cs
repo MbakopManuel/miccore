@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using miccore.Models;
@@ -14,8 +15,6 @@ namespace miccore
     [Command(Name = "migrate", Description = "migrate or update database with all migration depending of the project references")]
     class migrateCmd : miccoreBaseCmd
     {
-
-
         [Option("--dotnet_exec_path | -d",
                 Description = "if mentionned, serve the builder folder and launch the app",
                 ShowInHelpText = true
@@ -86,14 +85,16 @@ namespace miccore
                     }
 
                     var name = $"{companyName}.{projectName}.{_project}";
+                    var context = project.Context;
                     OutputToConsole($"{name} migration ... ");
                     // set current directory to project directory
-                    // Directory.SetCurrentDirectory($"./{name}/src/{name}.Api");
                     process.StartInfo.FileName = exec;
-                    if(exec.Contains('-'))
-                        process.StartInfo.Arguments = $"database update --project ./{name}/src/{name}.Api/{name}.Api.csproj";
+                    if(exec.Contains('-')){
+                        Directory.SetCurrentDirectory($"./{name}/src/{name}.Api");
+                        process.StartInfo.Arguments = $"database update  -c {context}";
+                    }
                     else
-                        process.StartInfo.Arguments = $"ef database update --project ./{name}/src/{name}.Api/{name}.Api.csproj";
+                        process.StartInfo.Arguments = $"ef database update --project ./{name}/src/{name}.Api/{name}.Api.csproj -c {context}";
                     process.Start();
                     process.WaitForExit();
                     if (process.ExitCode != 0)
@@ -114,9 +115,9 @@ namespace miccore
                 
                 var projets = package.Projects;
                 projets.ForEach(projet => {
-                    var name = projet.Name.Split(".")[0].ToLower();
+                    var name = projet.Name.Split(".")[0];
                     // check all element without gateway
-                    if(name != "gateway"){
+                    if(name != "Gateway"){
                         // if project doesn't have references, we insert it at index 0
                         if(projet.references.Count == 0){
                             // check if it isn't exist yet
@@ -147,16 +148,21 @@ namespace miccore
                 // foreach project in the dependency tree, run migrations
                 schedule.ForEach( x => {
                     // name of the project
+                    x = x[0].ToString().ToUpper() + x.Substring(1);
                     var name = $"{package.Company}.{package.Name}.{x}";
+                    var context = package.Projects.Where(p=> p.Name == x).FirstOrDefault().Context ?? "";
                     OutputToConsole($"{name} migration ... ");
-                    // set current directory to project directory
-                    // Directory.SetCurrentDirectory($"{current}/{name}/src/{name}.Api");
+                    
                     // run the dotnet ef databse update command
                     process.StartInfo.FileName = exec;
-                    if(exec.Contains('-'))
-                        process.StartInfo.Arguments = $"database update  --project ./{name}/src/{name}.Api/{name}.Api.csproj";
+                    if(exec.Contains('-')){
+                        // set current directory to project directory
+                        Directory.SetCurrentDirectory($"{current}/{name}/src/{name}.Api");
+                        process.StartInfo.Arguments = $"database update -c {context}";
+                    }
                     else
-                        process.StartInfo.Arguments = $"ef database update  --project ./{name}/src/{name}.Api/{name}.Api.csproj";
+                        process.StartInfo.Arguments = $"ef database update  --project ./{name}/src/{name}.Api/{name}.Api.csproj -c {context}";
+
                     process.Start();
                     process.WaitForExit();
                     if (process.ExitCode != 0)
